@@ -1,0 +1,64 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aoi-data-manager"
+version = "0.1.0"
+description = "AOI defect data management library"
+readme = "README.md"
+license = "MIT"
+authors = [
+    {name = "KTEC Development Team", email = "development@ktec.com"},
+]
+maintainers = [
+    {name = "KTEC Development Team", email = "development@ktec.com"},
+]
+requires-python = ">=3.12"
+dependencies = [
+    "pandas>=2.3.2",
+    "requests>=2.32.5",
+]
+keywords = ["aoi", "defect", "management", "manufacturing", "quality", "inspection"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Manufacturing", 
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/kent2980/aoi_defect_history"
+"Bug Reports" = "https://github.com/kent2980/aoi_defect_history/issues"
+"Source" = "https://github.com/kent2980/aoi_defect_history"
+"Documentation" = "https://github.com/kent2980/aoi_defect_history/blob/main/aoi_data_manager/README.md"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "flake8>=5.0.0",
+    "mypy>=1.0.0",
+]
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aoi_data_manager"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/README.md",
+    "/LICENSE",
+    "/MANIFEST.in",
+]
