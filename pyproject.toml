@@ -2,9 +2,19 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.uv]
+dev-dependencies = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "black>=23.0.0",
+    "flake8>=5.0.0",
+    "mypy>=1.0.0",
+]
+
 [project]
 name = "aoi-data-manager"
-version = "0.1.1"
+version = "0.1.16"
 description = "AOI defect data management library"
 readme = "README.md"
 license = "MIT"
@@ -39,13 +49,6 @@ classifiers = [
 "Documentation" = "https://github.com/kent2980/aoi_defect_history/blob/main/aoi_data_manager/README.md"
 
 [project.optional-dependencies]
-dev = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "black>=23.0.0",
-    "flake8>=5.0.0",
-    "mypy>=1.0.0",
-]
 test = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",

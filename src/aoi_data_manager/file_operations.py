@@ -177,3 +177,60 @@ class FileManager:
             raise FileNotFoundError(f"user.csv not found at {user_csv_path}")
         # CSVを読み込みして返す
         return pd.read_csv(user_csv_path)
+
+    @staticmethod
+    def create_kintone_settings_file(
+        settings_path: str, subdomain: str, app_id: str, api_token: str
+    ) -> bool:
+        """
+        kintone設定ファイルを作成
+        ### Args:
+            settings_path (str): kintone_settings.jsonのパス
+            subdomain (str): kintoneのサブドメイン
+            app_id (str): kintoneアプリID
+            api_token (str): kintone APIトークン
+        ### Returns:
+            bool: ファイル作成に成功したかどうか
+        """
+        try:
+            import json
+
+            settings = {
+                "subdomain": subdomain,
+                "app_id": app_id,
+                "api_token": api_token,
+            }
+            with open(settings_path, "w", encoding="utf-8") as f:
+                json.dump(settings, f, ensure_ascii=False, indent=4)
+            return True
+        except Exception as e:
+            print(f"Failed to create kintone settings file: {e}")
+            return False
+
+    @staticmethod
+    def load_kintone_settings_file(settings_path: str) -> dict:
+        """
+        kintone設定ファイルを読み込み
+        ### Args:
+            settings_path (str): kintone_settings.jsonのパス
+        ### Raises:
+            FileNotFoundError: kintone_settings.jsonが存在しない場合
+            Exception: ファイル読み込みエラー
+        ### Returns:
+            dict: kintone設定辞書
+        """
+        try:
+            import json
+
+            # ファイルの存在を確認
+            if not Path(settings_path).exists():
+                raise FileNotFoundError(
+                    f"kintone_settings.json not found at {settings_path}"
+                )
+            with open(settings_path, "r", encoding="utf-8") as f:
+                settings = json.load(f)
+            return settings
+        except FileNotFoundError as fnf_error:
+            raise fnf_error
+        except Exception as e:
+            raise Exception(f"Failed to load kintone settings file: {e}")

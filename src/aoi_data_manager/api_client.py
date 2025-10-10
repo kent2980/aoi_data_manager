@@ -44,29 +44,33 @@ class KintoneClient:
         url = f"{self.base_url}/records.json"
 
         # DefectInfoリストを辞書リストに変換
-        defect_list_dicts = [
-            {
-                "updateKey": {"field": "unique_id", "value": item.id},
+        defect_list_dicts = []
+        for item in defect_list:
+            # Noneや空の値をチェック
+            defect_dict = {
+                "updateKey": {"field": "unique_id", "value": str(item.id or "")},
                 "revision": -1,
                 "record": {
-                    "model_code": {"value": item.model_code},
-                    "lot_number": {"value": item.lot_number},
-                    "current_board_index": {"value": item.current_board_index},
-                    "defect_number": {"value": item.defect_number},
-                    "serial": {"value": item.serial},
-                    "reference": {"value": item.reference},
-                    "defect_name": {"value": item.defect_name},
-                    "x": {"value": item.x},
-                    "y": {"value": item.y},
-                    "aoi_user": {"value": item.aoi_user},
-                    "insert_date": {"value": item.insert_datetime},
-                    "model_label": {"value": item.model_label},
-                    "board_label": {"value": item.board_label},
-                    "unique_id": {"value": item.id},
+                    "model_code": {"value": str(item.model_code or "")},
+                    "lot_number": {"value": str(item.lot_number or "")},
+                    "current_board_index": {
+                        "value": int(item.current_board_index or 0)
+                    },
+                    "defect_number": {"value": str(item.defect_number or "")},
+                    "serial": {"value": str(item.serial or "")},
+                    "reference": {"value": str(item.reference or "")},
+                    "defect_name": {"value": str(item.defect_name or "")},
+                    "x": {"value": int(item.x or 0)},
+                    "y": {"value": int(item.y or 0)},
+                    "aoi_user": {"value": str(item.aoi_user or "")},
+                    "insert_datetime": {
+                        "value": str(item.insert_datetime or "")
+                    },  # 修正
+                    "model_label": {"value": str(item.model_label or "")},
+                    "board_label": {"value": str(item.board_label or "")},
                 },
             }
-            for item in defect_list
-        ]
+            defect_list_dicts.append(defect_dict)
 
         # 一括登録リクエスト
         data = {"app": self.app_id, "records": defect_list_dicts, "upsert": True}
@@ -105,13 +109,12 @@ class KintoneClient:
         # RepairdInfoリストを辞書リストに変換
         repaird_list_dicts = [
             {
-                "updateKey": {"field": "unique_id", "value": item.id},
+                "updateKey": {"field": "unique_id", "value": str(item.id or "")},
                 "revision": -1,
                 "record": {
-                    "unique_id": {"value": item.id},
-                    "is_repaird": {"value": item.is_repaird},
-                    "parts_type": {"value": item.parts_type},
-                    "insert_date": {"value": item.insert_datetime},
+                    "is_repaird": {"value": str(item.is_repaird or "")},
+                    "parts_type": {"value": str(item.parts_type or "")},
+                    "insert_date": {"value": str(item.insert_datetime or "")},
                 },
             }
             for item in repaird_list
@@ -159,3 +162,17 @@ class KintoneClient:
         # エラーチェック
         if response.status_code != 200:
             raise ValueError(f"API削除エラー: {response.json()}")
+
+    def is_connected(self) -> bool:
+        """
+        Kintoneへの接続確認
+        ### Returns:
+            bool: 接続成功ならTrue、失敗ならFalse
+        """
+        try:
+            url = f"{self.base_url}/app.json"
+            data = {"id": self.app_id}
+            response = requests.get(url, headers=self.headers, data=json.dumps(data))
+            return response.status_code == 200
+        except Exception:
+            return False
