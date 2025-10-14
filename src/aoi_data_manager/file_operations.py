@@ -1,8 +1,9 @@
 import os
 import pandas as pd
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 from .models import DefectInfo, RepairdInfo
+import re
 
 
 class FileManager:
@@ -234,3 +235,76 @@ class FileManager:
             raise fnf_error
         except Exception as e:
             raise Exception(f"Failed to load kintone settings file: {e}")
+
+    @staticmethod
+    def get_image_path(image_directory: str, lot_number: str, item_code: str) -> str:
+        """
+        指図に対応する画像ディレクトリのパスを生成
+        ### Args:
+            data_directory (str): データディレクトリ
+            lot_number (str): 指図
+            item_code (str): 品目コード
+        ### Raises:
+            ValueError: lot_numberの形式が不正な場合
+            FileNotFoundError: 画像ファイルが存在しない場合
+        ### Returns:
+            str: 画像ディレクトリのパス
+        """
+        # lotnumberの形式が正しいか確認
+        if not re.match(r"^[0-9]{7}-[0-9]{2}", lot_number):
+            raise ValueError("Invalid lot number format.")
+
+        # lotnumberの末尾の2桁を取得
+        lot_suffix = lot_number[-2:]
+
+        # ファイル名の正規表現パターン
+        pattern = rf"^{re.escape(item_code)}_{lot_suffix}_.*$"
+
+        # image_directory以下のディレクトリを走査
+        image_path = Path(image_directory)
+        for dir_entry in image_path.iterdir():
+            if re.match(pattern, dir_entry.name):
+                return str(dir_entry.name)
+        raise FileNotFoundError("Image directory not found.")
+
+    @staticmethod
+    def parse_image_filename(image_filename: str) -> Tuple[str, str, str]:
+        """
+        画像ファイル名から品目コードと指図を抽出
+        ### Args:
+            image_filename (str): 画像ファイル名（拡張子あり/なし両対応）
+        ### Raises:
+            ValueError: 画像ファイル名の形式が不正な場合
+        ### Returns:
+            (str, str, str): モデル名、基板名、基板面のタプル
+        """
+
+        # 拡張子を除去
+        filename_without_ext = image_filename
+        if "." in image_filename:
+            filename_without_ext = image_filename.rsplit(".", 1)[0]
+
+        # 修正された正規表現パターン（5フィールド）
+        # パターン: 品目コード_2桁数字_モデル名_基板名_基板面
+        match = re.match(r"^.*_[0-9]{2}_.*_.*_.*$", filename_without_ext)
+        if not match:
+            raise ValueError(f"Invalid image filename format: {image_filename}")
+
+        # アンダースコアで分割
+        parts = filename_without_ext.split("_")
+
+        # 最低5つのパートが必要
+        if len(parts) < 5:
+            raise ValueError(
+                f"Invalid filename format. Expected at least 5 parts: {image_filename}"
+            )
+
+        # 2番目のパートが2桁の数字であることを再確認
+        if not re.match(r"^\d{2}$", parts[1]):
+            raise ValueError(f"Second part should be 2-digit number: {parts[1]}")
+
+        model_name = parts[2]
+        board_name = parts[3]
+        board_side = parts[4]
+
+        return model_name, board_name, board_side

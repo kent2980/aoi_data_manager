@@ -51,6 +51,7 @@ class KintoneClient:
                 "updateKey": {"field": "unique_id", "value": str(item.id or "")},
                 "revision": -1,
                 "record": {
+                    "line_name": {"value": str(item.line_name or "")},
                     "model_code": {"value": str(item.model_code or "")},
                     "lot_number": {"value": str(item.lot_number or "")},
                     "current_board_index": {

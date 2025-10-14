@@ -9,6 +9,7 @@ class DefectInfo:
     idはlot_number, current_board_index, defect_numberの組み合わせで生成する
     ### Attributes:
         id (str): 不良情報の一意なID
+        line_name (str): 生産ライン
         model_code (str): Y番
         lot_number (str): 指図
         current_board_index (int): 基板番号
@@ -27,6 +28,8 @@ class DefectInfo:
 
     id: str = ""
     """id"""
+    line_name: str = ""
+    """生産ライン"""
     model_code: str = ""
     """Y番"""
     lot_number: str = ""

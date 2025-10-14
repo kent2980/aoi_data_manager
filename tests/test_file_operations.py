@@ -53,6 +53,26 @@ class TestFileManager:
         with pytest.raises(ValueError, match="Data directory is not set."):
             FileManager.create_defect_csv_path("", "LOT001", "image001")
 
+    def test_get_image_path(self):
+        """画像ディレクトリパス生成のテスト"""
+        data_dir = "C:\\Users\\kentaroyoshida\\Pictures\\image_coords_app"
+        lot_number = "1234567-20"
+        item_code = "Y8470722R"
+
+        result = FileManager.get_image_path(data_dir, lot_number, item_code)
+        assert isinstance(result, str)
+        assert result.startswith("Y8470722R_20_")
+
+    def test_get_model_data_from_image_filename(self):
+        """画像ファイル名からモデルデータ抽出のテスト"""
+        image_filename = "Y8470722R_20_CN-SNDDJ0CJ_411CA_S面.jpg"
+        model_name, board_name, borad_side = (
+            FileManager.get_model_data_from_image_filename(image_filename)
+        )
+        assert model_name == "CN-SNDDJ0CJ"
+        assert board_name == "411CA"
+        assert borad_side == "S面"
+
     @patch("aoi_data_manager.file_operations.Path.exists")
     @patch("aoi_data_manager.file_operations.pd.read_csv")
     def test_read_defect_csv_success(self, mock_read_csv, mock_exists):
