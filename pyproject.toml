@@ -14,7 +14,7 @@ dev-dependencies = [
 
 [project]
 name = "aoi-data-manager"
-version = "0.1.22"
+version = "0.1.23"
 description = "AOI defect data management library"
 readme = "README.md"
 license = "MIT"

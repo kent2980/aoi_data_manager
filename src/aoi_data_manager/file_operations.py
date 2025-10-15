@@ -201,7 +201,7 @@ class FileManager:
                 "app_id": app_id,
                 "api_token": api_token,
             }
-            with open(settings_path, "w", encoding="utf-8") as f:
+            with open(settings_path, "w", encoding="utf-8-sig") as f:
                 json.dump(settings, f, ensure_ascii=False, indent=4)
             return True
         except Exception as e:
@@ -228,7 +228,7 @@ class FileManager:
                 raise FileNotFoundError(
                     f"kintone_settings.json not found at {settings_path}"
                 )
-            with open(settings_path, "r", encoding="utf-8") as f:
+            with open(settings_path, "r", encoding="utf-8-sig") as f:
                 settings = json.load(f)
             return settings
         except FileNotFoundError as fnf_error:
