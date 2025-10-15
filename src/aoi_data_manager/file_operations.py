@@ -79,7 +79,7 @@ class FileManager:
             if not Path(filepath).exists():
                 return []
             # CSVを読み込み
-            df = pd.read_csv(filepath)
+            df = pd.read_csv(filepath, encoding="utf-8-sig")
             # DefectInfoのリストに変換して返す
             return [DefectInfo(**row) for row in df.to_dict(orient="records")]
         except Exception as e:
@@ -101,7 +101,7 @@ class FileManager:
             if not Path(filepath).exists():
                 return []
             # CSVを読み込み
-            df = pd.read_csv(filepath)
+            df = pd.read_csv(filepath, encoding="utf-8-sig")
             # RepairdInfoのリストに変換して返す
             return [RepairdInfo(**row) for row in df.to_dict(orient="records")]
         except Exception as e:
@@ -158,7 +158,7 @@ class FileManager:
         if not Path(mapping_path).exists():
             raise FileNotFoundError(f"defect_mapping.csv not found at {mapping_path}")
         # CSVを読み込み、欠損値を削除して返す
-        df = pd.read_csv(mapping_path)
+        df = pd.read_csv(mapping_path, encoding="utf-8-sig")
         # 不良名マッピングの列を指定
         return df.dropna()
 
@@ -177,7 +177,7 @@ class FileManager:
         if not Path(user_csv_path).exists():
             raise FileNotFoundError(f"user.csv not found at {user_csv_path}")
         # CSVを読み込みして返す
-        return pd.read_csv(user_csv_path)
+        return pd.read_csv(user_csv_path, encoding="utf-8-sig")
 
     @staticmethod
     def create_kintone_settings_file(
