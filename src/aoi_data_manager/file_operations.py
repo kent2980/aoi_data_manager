@@ -125,9 +125,9 @@ class FileManager:
             # インデックスを振らずにCSVに保存
             df.to_csv(filepath, index=False, encoding="utf-8-sig")
         except PermissionError as e:
-            raise Exception(f"Permission denied when saving defect CSV: {e}")
+            raise PermissionError(f"Permission denied when saving defect CSV: {e}")
         except OSError as e:
-            raise Exception(f"OS error when saving defect CSV: {e}")
+            raise OSError(f"OS error when saving defect CSV: {e}")
         except Exception as e:
             raise Exception(f"Failed to save defect CSV: {e}")
 
