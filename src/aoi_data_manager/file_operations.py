@@ -115,6 +115,8 @@ class FileManager:
             defect_list (List[DefectInfo]): 不良情報リスト
             filepath (str): 保存先CSVファイルのパス
         ### Raises:
+            PermissionError: ファイルが他のプロセスで使用中の場合
+            OSError: その他のOSエラー
             Exception: ファイル保存エラー
         """
         try:
@@ -122,6 +124,10 @@ class FileManager:
             df = pd.DataFrame([defect.__dict__ for defect in defect_list])
             # インデックスを振らずにCSVに保存
             df.to_csv(filepath, index=False, encoding="utf-8-sig")
+        except PermissionError as e:
+            raise Exception(f"Permission denied when saving defect CSV: {e}")
+        except OSError as e:
+            raise Exception(f"OS error when saving defect CSV: {e}")
         except Exception as e:
             raise Exception(f"Failed to save defect CSV: {e}")
 
