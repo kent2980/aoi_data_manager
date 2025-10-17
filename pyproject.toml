@@ -10,11 +10,12 @@ dev-dependencies = [
     "black>=23.0.0",
     "flake8>=5.0.0",
     "mypy>=1.0.0",
+    "psycopg2-binary>=2.9.0",
 ]
 
 [project]
 name = "aoi-data-manager"
-version = "0.1.26"
+version = "0.1.27"
 description = "AOI defect data management library"
 readme = "README.md"
 license = "MIT"
@@ -28,6 +29,8 @@ requires-python = ">=3.12"
 dependencies = [
     "pandas>=2.3.2",
     "requests>=2.32.5",
+    "sqlalchemy>=2.0.44",
+    "sqlmodel>=0.0.27",
 ]
 keywords = ["aoi", "defect", "management", "manufacturing", "quality", "inspection"]
 classifiers = [
