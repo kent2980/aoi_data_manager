@@ -5,12 +5,14 @@ build-backend = "hatchling.build"
 [tool.uv]
 dev-dependencies = [
     "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
+    "pytest-cov>=4.0.0", 
     "pytest-mock>=3.10.0",
     "black>=23.0.0",
     "flake8>=5.0.0",
     "mypy>=1.0.0",
-    "psycopg2-binary>=2.9.0",
+    # 32bit Windows対応版
+    "psycopg2-binary>=2.9.0;platform_machine!='i386'",
+    "psycopg2>=2.9.0;platform_machine=='i386'",
 ]
 
 [project]
@@ -25,12 +27,14 @@ authors = [
 maintainers = [
     {name = "KTEC Development Team", email = "development@ktec.com"},
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.8,<3.12"
 dependencies = [
-    "pandas>=2.3.2",
-    "requests>=2.32.5",
-    "sqlalchemy>=2.0.44",
-    "sqlmodel>=0.0.27",
+    # pandasの32bit対応版
+    "pandas>=1.5.0,<2.3.0",
+    "requests>=2.28.0",
+    # SQLAlchemyの安定版
+    "sqlalchemy>=1.4.0,<2.1.0",
+    "sqlmodel>=0.0.14,<0.1.0",
 ]
 keywords = ["aoi", "defect", "management", "manufacturing", "quality", "inspection"]
 classifiers = [
@@ -40,8 +44,11 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Scientific/Engineering :: Information Analysis",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9", 
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: Microsoft :: Windows",
     "Operating System :: OS Independent",
 ]
 

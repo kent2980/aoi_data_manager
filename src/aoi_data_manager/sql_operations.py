@@ -10,32 +10,23 @@ class SqlOperations:
 
     ### 対応データベースエンジン
     - SQLite3
-    - PostgreSQL
 
     Args:
-        db_engine (str): 使用するデータベースエンジン ('sqlite' または 'postgresql')
         db_url (str): データベース接続URL
     """
 
-    def __init__(self, db_engine: str, db_url: str):
+    def __init__(self, db_url: str):
         """
         コンストラクタ
         Args:
-            db_engine (str): 使用するデータベースエンジン ('sqlite' または 'postgresql')
             db_url (str): データベース接続URL
         """
-        self.db_engine = db_engine.lower()
         self.db_url = db_url
         self.engine = self._create_engine()
 
     def _create_engine(self):
         """指定されたデータベースエンジンに基づいてSQLAlchemyエンジンを作成"""
-        if self.db_engine == "sqlite":
-            return create_engine(f"sqlite:///{self.db_url}/aoi_data.db")
-        elif self.db_engine == "postgresql":
-            return create_engine(f"postgresql://{self.db_url}")
-        else:
-            raise ValueError(f"Unsupported database engine: {self.db_engine}")
+        return create_engine(f"sqlite:///{self.db_url}/aoi_data.db")
 
     def create_tables(self):
         """データベース内にDefectInfoおよびRepairdInfoのテーブルを作成"""
