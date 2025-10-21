@@ -66,12 +66,12 @@ class TestFileManager:
     def test_get_model_data_from_image_filename(self):
         """画像ファイル名からモデルデータ抽出のテスト"""
         image_filename = "Y8470722R_20_CN-SNDDJ0CJ_411CA_S面.jpg"
-        model_name, board_name, borad_side = (
-            FileManager.get_model_data_from_image_filename(image_filename)
+        model_name, board_name, board_side = FileManager.parse_image_filename(
+            image_filename
         )
         assert model_name == "CN-SNDDJ0CJ"
         assert board_name == "411CA"
-        assert borad_side == "S面"
+        assert board_side == "S面"
 
     @patch("aoi_data_manager.file_operations.Path.exists")
     @patch("aoi_data_manager.file_operations.pd.read_csv")
