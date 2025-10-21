@@ -44,9 +44,9 @@ class DefectInfo:
     """リファレンス"""
     defect_name: str = ""
     """不良名"""
-    x: int = 0
+    x: float = 0.0
     """X座標"""
-    y: int = 0
+    y: float = 0.0
     """Y座標"""
     aoi_user: str = ""
     """AOI検査員"""

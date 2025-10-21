@@ -45,9 +45,9 @@ class DefectInfo(SQLModel, table=True):
     """リファレンス"""
     defect_name: str = Field(default="", description="不良名")
     """不良名"""
-    x: int = Field(default=0, description="X座標")
+    x: float = Field(default=0.0, description="X座標")
     """X座標"""
-    y: int = Field(default=0, description="Y座標")
+    y: float = Field(default=0.0, description="Y座標")
     """Y座標"""
     aoi_user: str = Field(default="", description="AOI検査員")
     """AOI検査員"""
