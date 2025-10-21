@@ -101,10 +101,157 @@ class TestSqlOperationsBasicFunctionality:
         result = temp_db.insert_defect_info(sample_defect_data)
         assert result is None  # insert_defect_infoは戻り値なし
 
+    def test_defect_info_insertion_success_verification(
+        self, temp_db, sample_defect_data
+    ):
+        """DefectInfo挿入成功の詳細確認テスト"""
+        # 挿入前の状態確認
+        initial_count = len(temp_db.get_all_defect_info())
+
+        # データ挿入（ID事前取得でDetachedInstanceError回避）
+        defect_id = sample_defect_data.id
+        line_name = sample_defect_data.line_name
+        model_code = sample_defect_data.model_code
+        lot_number = sample_defect_data.lot_number
+        current_board_index = sample_defect_data.current_board_index
+        defect_number = sample_defect_data.defect_number
+        defect_name = sample_defect_data.defect_name
+        x = sample_defect_data.x
+        y = sample_defect_data.y
+
+        temp_db.insert_defect_info(sample_defect_data)
+
+        # 挿入後の確認
+        # 1. 総件数が1件増加していることを確認
+        after_count = len(temp_db.get_all_defect_info())
+        assert after_count == initial_count + 1
+
+        # 2. 挿入したデータがIDで取得できることを確認
+        retrieved_data = temp_db.get_defect_info_by_id(defect_id)
+        assert retrieved_data is not None
+
+        # 3. 挿入したデータの内容が正確に保存されていることを確認
+        assert retrieved_data.id == defect_id
+        assert retrieved_data.line_name == line_name
+        assert retrieved_data.model_code == model_code
+        assert retrieved_data.lot_number == lot_number
+        assert retrieved_data.current_board_index == current_board_index
+        assert retrieved_data.defect_number == defect_number
+        assert retrieved_data.defect_name == defect_name
+        assert retrieved_data.x == x
+        assert retrieved_data.y == y
+
+        # 4. 指図番号での検索でも取得できることを確認
+        lot_results = temp_db.get_defect_info_by_lot(lot_number)
+        assert len(lot_results) >= 1
+        found = any(defect.id == defect_id for defect in lot_results)
+        assert found, "挿入したデータが指図番号検索で見つからない"
+
+        # 5. 全件取得でも含まれていることを確認
+        all_results = temp_db.get_all_defect_info()
+        found_in_all = any(defect.id == defect_id for defect in all_results)
+        assert found_in_all, "挿入したデータが全件取得で見つからない"
+
     def test_repair_info_insertion(self, temp_db, sample_repair_data):
         """RepairdInfo挿入テスト"""
         result = temp_db.insert_repaird_info(sample_repair_data)
         assert result is None  # insert_repaird_infoは戻り値なし
+
+    def test_multiple_defect_info_insertion_success(self, temp_db):
+        """複数のDefectInfo挿入成功テスト"""
+        # テスト用の複数データを作成
+        defect_data_list = []
+        expected_data = []  # 検証用データを別途保存
+
+        for i in range(3):
+            defect_id = str(uuid.uuid4())
+            line_name = f"LINE_{i+1:02d}"
+            model_code = f"Y{i+1:03d}"
+            lot_number = f"LOT{i+1:03d}"
+
+            defect_data = DefectInfo(
+                id=defect_id,
+                line_name=line_name,
+                model_code=model_code,
+                lot_number=lot_number,
+                current_board_index=i + 1,
+                defect_number=i + 1,
+                defect_name=f"defect_type_{i+1}",
+                x=100 + i * 10,
+                y=200 + i * 10,
+            )
+            defect_data_list.append(defect_data)
+            # 検証用データを保存（DetachedInstanceError回避）
+            expected_data.append(
+                {
+                    "id": defect_id,
+                    "line_name": line_name,
+                    "model_code": model_code,
+                    "lot_number": lot_number,
+                    "current_board_index": i + 1,
+                    "defect_number": i + 1,
+                }
+            )
+
+        # 挿入前の件数確認
+        initial_count = len(temp_db.get_all_defect_info())
+
+        # 各データを挿入
+        for defect_data in defect_data_list:
+            temp_db.insert_defect_info(defect_data)
+
+        # 挿入後の確認
+        final_count = len(temp_db.get_all_defect_info())
+        assert final_count == initial_count + 3
+
+        # 各データが正しく挿入されていることを確認
+        for expected in expected_data:
+            retrieved = temp_db.get_defect_info_by_id(expected["id"])
+            assert retrieved is not None
+            assert retrieved.line_name == expected["line_name"]
+            assert retrieved.lot_number == expected["lot_number"]
+            assert retrieved.current_board_index == expected["current_board_index"]
+
+    def test_defect_info_insertion_with_special_characters(self, temp_db):
+        """特殊文字を含むDefectInfo挿入テスト"""
+        # 検証用データを事前に変数として保存
+        defect_id = str(uuid.uuid4())
+        line_name = "LINE_特殊文字テスト"
+        model_code = "Y001-αβγ"
+        lot_number = "LOT001_検査済み"
+        defect_name = "不良タイプ_漢字混合123"
+        serial = "SN_αβγδε_12345"
+        reference = "REF_参照番号_ABC"
+        aoi_user = "ユーザー名_日本語"
+
+        defect_data = DefectInfo(
+            id=defect_id,
+            line_name=line_name,
+            model_code=model_code,
+            lot_number=lot_number,
+            current_board_index=1,
+            defect_number=999,
+            defect_name=defect_name,
+            x=12345,
+            y=67890,
+            serial=serial,
+            reference=reference,
+            aoi_user=aoi_user,
+        )
+
+        # 挿入
+        temp_db.insert_defect_info(defect_data)
+
+        # 取得して確認
+        retrieved = temp_db.get_defect_info_by_id(defect_id)
+        assert retrieved is not None
+        assert retrieved.line_name == line_name
+        assert retrieved.model_code == model_code
+        assert retrieved.lot_number == lot_number
+        assert retrieved.defect_name == defect_name
+        assert retrieved.serial == serial
+        assert retrieved.reference == reference
+        assert retrieved.aoi_user == aoi_user
 
     def test_get_defect_info_by_id_exists(self, temp_db, sample_defect_data):
         """存在するIDでのDefectInfo取得テスト"""
