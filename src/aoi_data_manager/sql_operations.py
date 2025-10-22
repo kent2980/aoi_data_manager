@@ -169,6 +169,46 @@ class SqlOperations:
                 session.rollback()
                 raise
 
+    def insert_defect_infos(self, defect_infos: List[DefectInfo]):
+        """DefectInfoデータを一括挿入"""
+        self._check_connection()
+        # スキーマをデータベースモデルに変換
+        db_models = [self._schema_to_db_model(info) for info in defect_infos]
+        with Session(self.engine) as session:
+            try:
+                session.add_all(db_models)
+                session.commit()
+            except Exception as e:
+                session.rollback()
+                raise
+
+    def merge_insert_defect_info(self, defect_info: DefectInfo):
+        """DefectInfoデータをマージ挿入（存在すれば更新、なければ挿入）"""
+        self._check_connection()
+        # スキーマをデータベースモデルに変換
+        db_model = self._schema_to_db_model(defect_info)
+        with Session(self.engine) as session:
+            try:
+                session.merge(db_model)
+                session.commit()
+            except Exception as e:
+                session.rollback()
+                raise
+
+    def merge_insert_defect_infos(self, defect_infos: List[DefectInfo]):
+        """DefectInfoデータを一括マージ挿入（存在すれば更新、なければ挿入）"""
+        self._check_connection()
+        # スキーマをデータベースモデルに変換
+        db_models = [self._schema_to_db_model(info) for info in defect_infos]
+        with Session(self.engine) as session:
+            try:
+                for db_model in db_models:
+                    session.merge(db_model)
+                session.commit()
+            except Exception as e:
+                session.rollback()
+                raise
+
     def insert_repaird_info(self, repaird_info: RepairdInfo):
         """RepairdInfoデータをデータベースに挿入"""
         self._check_connection()
