@@ -34,12 +34,14 @@ class SqlOperations:
         sql_ops.close()
     """
 
-    def __init__(self, db_url: str):
+    def __init__(self, db_url: str, db_name: str = "aoi_data.db"):
         """
         コンストラクタ
         Args:
             db_url (str): データベース接続URL
+            db_name (str): データベース名
         """
+        self.db_name = db_name
         self.db_url = db_url
         self.engine = self._create_engine()
         self._closed = False
@@ -57,7 +59,7 @@ class SqlOperations:
 
     def _create_engine(self):
         """指定されたデータベースエンジンに基づいてSQLAlchemyエンジンを作成"""
-        return create_engine(f"sqlite:///{self.db_url}/aoi_data.db")
+        return create_engine(f"sqlite:///{self.db_url}/{self.db_name}")
 
     @staticmethod
     def _cleanup_engine(engine):
