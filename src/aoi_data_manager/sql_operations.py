@@ -90,6 +90,7 @@ class SqlOperations:
 
     def insert_defect_info(self, defect_info: DefectInfo):
         """DefectInfoデータをデータベースに挿入"""
+        print("DEBUG: Inserting defect_info")
         self._check_connection()
         with Session(self.engine) as session:
             try:
