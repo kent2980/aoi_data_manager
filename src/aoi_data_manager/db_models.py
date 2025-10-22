@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from uuid import uuid5, NAMESPACE_DNS
 from sqlmodel import SQLModel, Field
 from datetime import datetime
@@ -51,8 +50,8 @@ class DefectInfo(SQLModel, table=True):
     """Y座標"""
     aoi_user: str = Field(default="", description="AOI検査員")
     """AOI検査員"""
-    insert_datetime: datetime = Field(
-        default_factory=datetime.now, description="更新日時"
+    insert_datetime: str = Field(
+        default_factory=lambda: str(datetime.now()), description="更新日時"
     )
     """更新日時"""
     model_label: str = Field(default="", description="モデルラベル")
@@ -89,8 +88,8 @@ class RepairdInfo(SQLModel, table=True):
     """修理済みかどうか"""
     parts_type: str = Field(default="", description="部品種別")
     """部品種別"""
-    insert_datetime: datetime = Field(
-        default_factory=datetime.now, description="更新日時"
+    insert_datetime: str = Field(
+        default_factory=lambda: str(datetime.now()), description="更新日時"
     )
     """更新日時"""
     kintone_record_id: str = Field(default="", description="kintoneレコードID")
