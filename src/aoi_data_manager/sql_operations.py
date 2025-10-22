@@ -92,8 +92,21 @@ class SqlOperations:
         """DefectInfoデータをデータベースに挿入"""
         self._check_connection()
         with Session(self.engine) as session:
-            session.add(defect_info)
-            session.commit()
+            try:
+                print(f"DEBUG: Inserting defect_info with ID: {defect_info.defect_id}")
+                session.add(defect_info)
+                session.commit()
+                print(
+                    f"DEBUG: Successfully inserted defect_info with ID: {defect_info.defect_id}"
+                )
+            except Exception as e:
+                print(
+                    f"DEBUG: Failed to insert defect_info with ID: {defect_info.defect_id}"
+                )
+                print(f"DEBUG: Error type: {type(e).__name__}")
+                print(f"DEBUG: Error message: {str(e)}")
+                session.rollback()
+                raise
 
     def insert_repaird_info(self, repaird_info: RepairdInfo):
         """RepairdInfoデータをデータベースに挿入"""
