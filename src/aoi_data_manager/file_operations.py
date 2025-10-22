@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from pathlib import Path
 from typing import List, Tuple
-from .models import DefectInfo, RepairdInfo
+from .schema import DefectInfo, RepairdInfo
 import re
 
 
@@ -80,6 +80,8 @@ class FileManager:
                 return []
             # CSVを読み込み
             df = pd.read_csv(filepath, encoding="utf-8-sig")
+            # NaNを空文字列に置換
+            df = df.fillna("")
             # DefectInfoのリストに変換して返す
             return [DefectInfo(**row) for row in df.to_dict(orient="records")]
         except Exception as e:
@@ -102,6 +104,15 @@ class FileManager:
                 return []
             # CSVを読み込み
             df = pd.read_csv(filepath, encoding="utf-8-sig")
+            # NaNを適切な値に置換
+            df = df.fillna(
+                {
+                    "is_repaird": False,
+                    "parts_type": "",
+                    "insert_datetime": "",
+                    "kintone_record_id": "",
+                }
+            )
             # RepairdInfoのリストに変換して返す
             return [RepairdInfo(**row) for row in df.to_dict(orient="records")]
         except Exception as e:

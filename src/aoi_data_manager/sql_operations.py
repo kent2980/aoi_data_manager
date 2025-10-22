@@ -1,8 +1,11 @@
 from sqlmodel import SQLModel, create_engine, Session, select
 from typing import List, Optional
 import weakref
-from .schema import DefectInfoSchema, RepairdInfoSchema
-from .db_models import DefectInfo, RepairdInfo  # テーブル定義用
+from .schema import DefectInfo, RepairdInfo
+from .db_models import (
+    DefectInfoTable,
+    RepairdInfoTable,
+)  # テーブル定義用
 
 
 class SqlOperations:
@@ -86,8 +89,8 @@ class SqlOperations:
 
     def _schema_to_db_model(self, schema_obj):
         """スキーマオブジェクトをデータベースモデルに変換"""
-        if isinstance(schema_obj, DefectInfoSchema):
-            return DefectInfo(
+        if isinstance(schema_obj, DefectInfo):
+            return DefectInfoTable(
                 id=schema_obj.id,
                 line_name=schema_obj.line_name,
                 model_code=schema_obj.model_code,
@@ -105,8 +108,8 @@ class SqlOperations:
                 board_label=schema_obj.board_label,
                 kintone_record_id=schema_obj.kintone_record_id,
             )
-        elif isinstance(schema_obj, RepairdInfoSchema):
-            return RepairdInfo(
+        elif isinstance(schema_obj, RepairdInfo):
+            return RepairdInfoTable(
                 id=schema_obj.id,
                 is_repaird=schema_obj.is_repaird,
                 parts_type=schema_obj.parts_type,
@@ -118,8 +121,8 @@ class SqlOperations:
 
     def _db_model_to_schema(self, db_obj):
         """データベースモデルをスキーマオブジェクトに変換"""
-        if isinstance(db_obj, DefectInfo):
-            return DefectInfoSchema(
+        if isinstance(db_obj, DefectInfoTable):
+            return DefectInfo(
                 id=db_obj.id,
                 line_name=db_obj.line_name,
                 model_code=db_obj.model_code,
@@ -137,8 +140,8 @@ class SqlOperations:
                 board_label=db_obj.board_label,
                 kintone_record_id=db_obj.kintone_record_id,
             )
-        elif isinstance(db_obj, RepairdInfo):
-            return RepairdInfoSchema(
+        elif isinstance(db_obj, RepairdInfoTable):
+            return RepairdInfo(
                 id=db_obj.id,
                 is_repaird=db_obj.is_repaird,
                 parts_type=db_obj.parts_type,
@@ -153,11 +156,9 @@ class SqlOperations:
         self._check_connection()
         SQLModel.metadata.create_all(self.engine)
 
-    def insert_defect_info(self, defect_info: DefectInfoSchema):
+    def insert_defect_info(self, defect_info: DefectInfo):
         """DefectInfoデータをデータベースに挿入"""
         self._check_connection()
-        # スキーマを __post_init__ 処理
-        defect_info.__post_init__()
         # スキーマをデータベースモデルに変換
         db_model = self._schema_to_db_model(defect_info)
         with Session(self.engine) as session:
@@ -168,71 +169,69 @@ class SqlOperations:
                 session.rollback()
                 raise
 
-    def insert_repaird_info(self, repaird_info: RepairdInfoSchema):
+    def insert_repaird_info(self, repaird_info: RepairdInfo):
         """RepairdInfoデータをデータベースに挿入"""
         self._check_connection()
-        # スキーマを __post_init__ 処理
-        repaird_info.__post_init__()
         # スキーマをデータベースモデルに変換
         db_model = self._schema_to_db_model(repaird_info)
         with Session(self.engine) as session:
             session.add(db_model)
             session.commit()
 
-    def get_defect_info_by_id(self, defect_id: str) -> Optional[DefectInfoSchema]:
+    def get_defect_info_by_id(self, defect_id: str) -> Optional[DefectInfo]:
         """IDでDefectInfoを取得"""
         self._check_connection()
         with Session(self.engine) as session:
-            db_obj = session.get(DefectInfo, defect_id)
+            db_obj = session.get(DefectInfoTable, defect_id)
             return self._db_model_to_schema(db_obj) if db_obj else None
 
-    def get_all_defect_info(self) -> List[DefectInfoSchema]:
+    def get_all_defect_info(self) -> List[DefectInfo]:
         """全てのDefectInfoを取得"""
         self._check_connection()
         with Session(self.engine) as session:
-            statement = select(DefectInfo)
+            statement = select(DefectInfoTable)
             db_objects = session.exec(statement).all()
             return [self._db_model_to_schema(db_obj) for db_obj in db_objects]
 
-    def get_defect_info_by_lot(self, lot_number: str) -> List[DefectInfoSchema]:
+    def get_defect_info_by_lot(self, lot_number: str) -> List[DefectInfo]:
         """指図番号でDefectInfoを取得"""
         self._check_connection()
         with Session(self.engine) as session:
-            statement = select(DefectInfo).where(DefectInfo.lot_number == lot_number)
+            statement = select(DefectInfoTable).where(
+                DefectInfoTable.lot_number == lot_number
+            )
             db_objects = session.exec(statement).all()
             return [self._db_model_to_schema(db_obj) for db_obj in db_objects]
 
-    def get_repaird_info_by_id(self, repair_id: str) -> Optional[RepairdInfoSchema]:
+    def get_repaird_info_by_id(self, repair_id: str) -> Optional[RepairdInfo]:
         """IDでRepairdInfoを取得"""
         self._check_connection()
         with Session(self.engine) as session:
-            db_obj = session.get(RepairdInfo, repair_id)
+            db_obj = session.get(RepairdInfoTable, repair_id)
             return self._db_model_to_schema(db_obj) if db_obj else None
 
-    def get_all_repaird_info(self) -> List[RepairdInfoSchema]:
+    def get_all_repaird_info(self) -> List[RepairdInfo]:
         """全てのRepairdInfoを取得"""
         self._check_connection()
         with Session(self.engine) as session:
-            statement = select(RepairdInfo)
+            statement = select(RepairdInfoTable)
             db_objects = session.exec(statement).all()
             return [self._db_model_to_schema(db_obj) for db_obj in db_objects]
 
-    def insert_defect_info_batch(self, defect_infos: List[DefectInfoSchema]):
+    def insert_defect_info_batch(self, defect_infos: List[DefectInfo]):
         """DefectInfoデータを一括挿入"""
         self._check_connection()
         with Session(self.engine) as session:
             for defect_info in defect_infos:
-                defect_info.__post_init__()
                 db_model = self._schema_to_db_model(defect_info)
                 session.add(db_model)
             session.commit()
 
-    def insert_repaird_info_batch(self, repaird_infos: List[RepairdInfoSchema]):
+    def insert_repaird_info_batch(self, repaird_infos: List[RepairdInfo]):
         """RepairdInfoデータを一括挿入"""
         self._check_connection()
         with Session(self.engine) as session:
             for repaird_info in repaird_infos:
-                repaird_info.__post_init__()
                 db_model = self._schema_to_db_model(repaird_info)
                 session.add(db_model)
             session.commit()
@@ -241,7 +240,7 @@ class SqlOperations:
         """DefectInfoを削除"""
         self._check_connection()
         with Session(self.engine) as session:
-            defect_info = session.get(DefectInfo, defect_id)
+            defect_info = session.get(DefectInfoTable, defect_id)
             if defect_info:
                 session.delete(defect_info)
                 session.commit()
@@ -252,7 +251,7 @@ class SqlOperations:
         """RepairdInfoを削除"""
         self._check_connection()
         with Session(self.engine) as session:
-            repaird_info = session.get(RepairdInfo, repair_id)
+            repaird_info = session.get(RepairdInfoTable, repair_id)
             if repaird_info:
                 session.delete(repaird_info)
                 session.commit()

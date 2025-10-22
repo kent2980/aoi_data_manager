@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from unittest.mock import patch, mock_open, MagicMock
 from aoi_data_manager.file_operations import FileManager
-from aoi_data_manager.models import DefectInfo, RepairdInfo
+from aoi_data_manager.schema import DefectInfo, RepairdInfo
 
 
 class TestFileManager:
@@ -85,12 +85,12 @@ class TestFileManager:
                     "model_code": "Y001",
                     "lot_number": "LOT001",
                     "current_board_index": 1,
-                    "defect_number": "D001",
+                    "defect_number": 1,
                     "serial": "SER001",
                     "reference": "R001",
                     "defect_name": "短絡",
-                    "x": 100,
-                    "y": 200,
+                    "x": 0.78678578759,
+                    "y": 0.56848579569,
                     "aoi_user": "user001",
                     "insert_datetime": "2023-01-01 12:00:00",
                     "model_label": "Model001",

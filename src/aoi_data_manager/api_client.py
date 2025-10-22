@@ -1,7 +1,7 @@
 import requests
 import json
 from typing import List, Dict, Any
-from .models import DefectInfo, RepairdInfo
+from .schema import DefectInfo, RepairdInfo
 
 
 class KintoneClient:

@@ -6,9 +6,11 @@
 from uuid import uuid5, NAMESPACE_DNS
 from sqlmodel import SQLModel
 from datetime import datetime
+from pydantic import model_validator
+from typing import Any
 
 
-class DefectInfoSchema(SQLModel):
+class DefectInfo(SQLModel):
     """
     不良情報のスキーマクラス
     idはlot_number, current_board_index, defect_numberの組み合わせで生成する
@@ -64,16 +66,21 @@ class DefectInfoSchema(SQLModel):
     kintone_record_id: str = ""
     """kintoneレコードID"""
 
-    def __post_init__(self):
-        """初期化後処理 - IDの自動生成と日時設定"""
-        if not self.id:
-            namespace = (
-                f"{self.lot_number}_{self.current_board_index}_{self.defect_number}"
-            )
-            self.id = str(uuid5(NAMESPACE_DNS, namespace))
+    @model_validator(mode="before")
+    @classmethod
+    def generate_id_and_datetime(cls, values: Any) -> Any:
+        """IDと日時の自動生成"""
+        if isinstance(values, dict):
+            if not values.get("id"):
+                lot_number = values.get("lot_number", "")
+                current_board_index = values.get("current_board_index", 0)
+                defect_number = values.get("defect_number", 0)
+                namespace = f"{lot_number}_{current_board_index}_{defect_number}"
+                values["id"] = str(uuid5(NAMESPACE_DNS, namespace))
 
-        if not self.insert_datetime:
-            self.insert_datetime = str(datetime.now())
+            if not values.get("insert_datetime"):
+                values["insert_datetime"] = str(datetime.now())
+        return values
 
     @classmethod
     def create(
@@ -92,9 +99,9 @@ class DefectInfoSchema(SQLModel):
         model_label: str = "",
         board_label: str = "",
         kintone_record_id: str = "",
-    ) -> "DefectInfoSchema":
+    ) -> "DefectInfo":
         """
-        DefectInfoSchemaインスタンスを作成するファクトリメソッド
+        DefectInfoインスタンスを作成するファクトリメソッド
 
         Args:
             line_name: 生産ライン
@@ -131,11 +138,10 @@ class DefectInfoSchema(SQLModel):
             board_label=board_label,
             kintone_record_id=kintone_record_id,
         )
-        instance.__post_init__()
         return instance
 
 
-class RepairdInfoSchema(SQLModel):
+class RepairdInfo(SQLModel):
     """
     修理済み情報のスキーマクラス
     idはDefectInfoのidと同じものを使用する
@@ -159,10 +165,14 @@ class RepairdInfoSchema(SQLModel):
     kintone_record_id: str = ""
     """kintoneレコードID"""
 
-    def __post_init__(self):
-        """初期化後処理 - 日時設定"""
-        if not self.insert_datetime:
-            self.insert_datetime = str(datetime.now())
+    @model_validator(mode="before")
+    @classmethod
+    def generate_datetime(cls, values: Any) -> Any:
+        """日時の自動生成"""
+        if isinstance(values, dict):
+            if not values.get("insert_datetime"):
+                values["insert_datetime"] = str(datetime.now())
+        return values
 
     @classmethod
     def create(
@@ -171,7 +181,7 @@ class RepairdInfoSchema(SQLModel):
         is_repaird: bool = False,
         parts_type: str = "",
         kintone_record_id: str = "",
-    ) -> "RepairdInfoSchema":
+    ) -> "RepairdInfo":
         """
         RepairdInfoSchemaインスタンスを作成するファクトリメソッド
 
@@ -190,5 +200,4 @@ class RepairdInfoSchema(SQLModel):
             parts_type=parts_type,
             kintone_record_id=kintone_record_id,
         )
-        instance.__post_init__()
         return instance

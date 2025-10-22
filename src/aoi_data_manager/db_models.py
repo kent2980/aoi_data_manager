@@ -1,9 +1,11 @@
 from uuid import uuid5, NAMESPACE_DNS
 from sqlmodel import SQLModel, Field
 from datetime import datetime
+from pydantic import model_validator
+from typing import Any
 
 
-class DefectInfo(SQLModel, table=True):
+class DefectInfoTable(SQLModel, table=True):
     """
     不良情報を保持するデータクラス
     idはlot_number, current_board_index, defect_numberの組み合わせで生成する
@@ -61,15 +63,21 @@ class DefectInfo(SQLModel, table=True):
     kintone_record_id: str = Field(default="", description="kintoneレコードID")
     """kintoneレコードID"""
 
-    def __post_init__(self):
-        if not self.id:
-            namespace = (
-                f"{self.lot_number}_{self.current_board_index}_{self.defect_number}"
-            )
-            self.id = str(uuid5(NAMESPACE_DNS, namespace))
+    @model_validator(mode="before")
+    @classmethod
+    def generate_id(cls, values: Any) -> Any:
+        """IDを自動生成"""
+        if isinstance(values, dict):
+            if not values.get("id"):
+                lot_number = values.get("lot_number", "")
+                current_board_index = values.get("current_board_index", 0)
+                defect_number = values.get("defect_number", 0)
+                namespace = f"{lot_number}_{current_board_index}_{defect_number}"
+                values["id"] = str(uuid5(NAMESPACE_DNS, namespace))
+        return values
 
 
-class RepairdInfo(SQLModel, table=True):
+class RepairdInfoTable(SQLModel, table=True):
     """
     修理済み情報を保持するデータクラス
     idはDefectInfoのidと同じものを使用する

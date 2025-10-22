@@ -3,7 +3,7 @@ import json
 import os
 from unittest.mock import patch, MagicMock
 from aoi_data_manager.api_client import KintoneClient
-from aoi_data_manager.models import DefectInfo, RepairdInfo
+from aoi_data_manager.schema import DefectInfo, RepairdInfo
 
 
 class TestKintoneClient:
@@ -74,7 +74,7 @@ class TestKintoneClient:
         mock_put.return_value = mock_response
 
         # テストデータ
-        repaird_list = [RepairdInfo(id="test-id", is_repaird="修理済み")]
+        repaird_list = [RepairdInfo(id="test-id", is_repaird=True)]
 
         # テスト実行
         result = self.client.post_repaird_records(repaird_list)

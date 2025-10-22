@@ -26,7 +26,7 @@ except ImportError:
     PSUTIL_AVAILABLE = False
 
 from aoi_data_manager.sql_operations import SqlOperations
-from aoi_data_manager.db_models import DefectInfo, RepairdInfo
+from aoi_data_manager.schema import DefectInfo, RepairdInfo
 
 
 # ===== フィクスチャ =====
@@ -45,7 +45,6 @@ def temp_db():
 def sample_defect_data():
     """テスト用のサンプル不良データ"""
     return DefectInfo(
-        id=str(uuid.uuid4()),
         line_name="LINE_01",
         model_code="Y001",
         lot_number="LOT001",
@@ -67,7 +66,6 @@ def sample_defect_data():
 def sample_repair_data():
     """テスト用のサンプル修理データ"""
     return RepairdInfo(
-        id=str(uuid.uuid4()),
         is_repaird=True,
         parts_type="CHIP",
         kintone_record_id="kr001",
@@ -97,14 +95,14 @@ class TestSqlOperationsBasicFunctionality:
                 assert sql_ops.engine is not None
 
     def test_defect_info_insertion(self, temp_db, sample_defect_data):
-        """DefectInfo挿入テスト"""
+        """DefectInfoTable挿入テスト"""
         result = temp_db.insert_defect_info(sample_defect_data)
         assert result is None  # insert_defect_infoは戻り値なし
 
     def test_defect_info_insertion_success_verification(
         self, temp_db, sample_defect_data
     ):
-        """DefectInfo挿入成功の詳細確認テスト"""
+        """DefectInfoTable挿入成功の詳細確認テスト"""
         # 挿入前の状態確認
         initial_count = len(temp_db.get_all_defect_info())
 
@@ -153,12 +151,12 @@ class TestSqlOperationsBasicFunctionality:
         assert found_in_all, "挿入したデータが全件取得で見つからない"
 
     def test_repair_info_insertion(self, temp_db, sample_repair_data):
-        """RepairdInfo挿入テスト"""
+        """RepairdInfoTable挿入テスト"""
         result = temp_db.insert_repaird_info(sample_repair_data)
         assert result is None  # insert_repaird_infoは戻り値なし
 
     def test_multiple_defect_info_insertion_success(self, temp_db):
-        """複数のDefectInfo挿入成功テスト"""
+        """複数のDefectInfoTable挿入成功テスト"""
         # テスト用の複数データを作成
         defect_data_list = []
         expected_data = []  # 検証用データを別途保存
@@ -213,7 +211,7 @@ class TestSqlOperationsBasicFunctionality:
             assert retrieved.current_board_index == expected["current_board_index"]
 
     def test_defect_info_insertion_with_special_characters(self, temp_db):
-        """特殊文字を含むDefectInfo挿入テスト"""
+        """特殊文字を含むDefectInfoTable挿入テスト"""
         # 検証用データを事前に変数として保存
         defect_id = str(uuid.uuid4())
         line_name = "LINE_特殊文字テスト"
@@ -254,7 +252,7 @@ class TestSqlOperationsBasicFunctionality:
         assert retrieved.aoi_user == aoi_user
 
     def test_get_defect_info_by_id_exists(self, temp_db, sample_defect_data):
-        """存在するIDでのDefectInfo取得テスト"""
+        """存在するIDでのDefectInfoTable取得テスト"""
         defect_id = sample_defect_data.id  # IDを事前に取得
         temp_db.insert_defect_info(sample_defect_data)
 
@@ -265,12 +263,12 @@ class TestSqlOperationsBasicFunctionality:
         assert result.defect_name == "scratch"
 
     def test_get_defect_info_by_id_not_exists(self, temp_db):
-        """存在しないIDでのDefectInfo取得テスト"""
+        """存在しないIDでのDefectInfoTable取得テスト"""
         result = temp_db.get_defect_info_by_id("nonexistent_id")
         assert result is None
 
     def test_get_all_defect_info(self, temp_db, sample_defect_data):
-        """全DefectInfo取得テスト"""
+        """全DefectInfoTable取得テスト"""
         temp_db.insert_defect_info(sample_defect_data)
 
         result = temp_db.get_all_defect_info()
@@ -278,7 +276,7 @@ class TestSqlOperationsBasicFunctionality:
         assert result[0].line_name == "LINE_01"
 
     def test_get_defect_info_by_lot(self, temp_db):
-        """指図番号でのDefectInfo取得テスト"""
+        """指図番号でのDefectInfoTable取得テスト"""
         lot_number = "LOT_TEST_001"
         defect_data = DefectInfo(
             id=str(uuid.uuid4()),
@@ -296,7 +294,7 @@ class TestSqlOperationsBasicFunctionality:
         assert result[0].lot_number == lot_number
 
     def test_get_repair_info_by_id(self, temp_db, sample_repair_data):
-        """RepairdInfo取得テスト"""
+        """RepairdInfoTable取得テスト"""
         repair_id = sample_repair_data.id  # IDを事前に取得
         temp_db.insert_repaird_info(sample_repair_data)
 
@@ -306,7 +304,7 @@ class TestSqlOperationsBasicFunctionality:
         assert result.is_repaird is True
 
     def test_get_all_repair_info(self, temp_db, sample_repair_data):
-        """全RepairdInfo取得テスト"""
+        """全RepairdInfoTable取得テスト"""
         temp_db.insert_repaird_info(sample_repair_data)
 
         result = temp_db.get_all_repaird_info()
@@ -320,7 +318,7 @@ class TestSqlOperationsBatchOperations:
     """バッチ操作テスト"""
 
     def test_defect_info_batch_insert(self, temp_db):
-        """DefectInfoバッチ挿入テスト"""
+        """DefectInfoTableバッチ挿入テスト"""
         defect_list = []
         for i in range(5):
             defect_data = DefectInfo(
@@ -346,7 +344,7 @@ class TestSqlOperationsBatchOperations:
         assert len(all_data) >= 5
 
     def test_repair_info_batch_insert(self, temp_db):
-        """RepairdInfoバッチ挿入テスト"""
+        """RepairdInfoTableバッチ挿入テスト"""
         repair_list = []
         for i in range(3):
             repair_data = RepairdInfo(
@@ -372,7 +370,7 @@ class TestSqlOperationsDeleteOperations:
     """削除操作テスト"""
 
     def test_delete_defect_info_success(self, temp_db, sample_defect_data):
-        """DefectInfo削除成功テスト"""
+        """DefectInfoTable削除成功テスト"""
         defect_id = sample_defect_data.id  # IDを事前に取得
         temp_db.insert_defect_info(sample_defect_data)
 
@@ -384,12 +382,12 @@ class TestSqlOperationsDeleteOperations:
         assert deleted_data is None
 
     def test_delete_defect_info_not_exists(self, temp_db):
-        """存在しないDefectInfo削除テスト"""
+        """存在しないDefectInfoTable削除テスト"""
         result = temp_db.delete_defect_info("nonexistent_id")
         assert result is False
 
     def test_delete_repair_info_success(self, temp_db, sample_repair_data):
-        """RepairdInfo削除成功テスト"""
+        """RepairdInfoTable削除成功テスト"""
         repair_id = sample_repair_data.id  # IDを事前に取得
         temp_db.insert_repaird_info(sample_repair_data)
 
@@ -401,7 +399,7 @@ class TestSqlOperationsDeleteOperations:
         assert deleted_data is None
 
     def test_delete_repair_info_not_exists(self, temp_db):
-        """存在しないRepairdInfo削除テスト"""
+        """存在しないRepairdInfoTable削除テスト"""
         result = temp_db.delete_repaird_info("nonexistent_id")
         assert result is False
 
@@ -682,7 +680,7 @@ class TestSqlOperationsIntegration:
 
     def test_complete_workflow(self, temp_db):
         """完全なワークフローテスト"""
-        # 1. DefectInfo挿入
+        # 1. DefectInfoTable挿入
         defect_id = str(uuid.uuid4())
         defect_data = DefectInfo(
             id=defect_id,
@@ -702,7 +700,7 @@ class TestSqlOperationsIntegration:
         assert retrieved_data is not None
         assert retrieved_data.line_name == "LINE_01"
 
-        # 3. RepairdInfo挿入
+        # 3. RepairdInfoTable挿入
         repair_data = RepairdInfo(
             id=str(uuid.uuid4()), is_repaird=True, parts_type="CHIP"
         )

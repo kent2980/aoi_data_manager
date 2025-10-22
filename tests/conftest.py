@@ -15,8 +15,8 @@ def temp_dir():
 def sample_defect_csv_data():
     """サンプル不良CSVデータのフィクスチャ"""
     return """id,model_code,lot_number,current_board_index,defect_number,serial,reference,defect_name,x,y,aoi_user,insert_datetime,model_label,board_label,kintone_record_id
-test-id-1,Y001,LOT001,1,D001,SER001,R001,短絡,100,200,user001,2023-01-01 12:00:00,Model001,Board001,100
-test-id-2,Y002,LOT002,2,D002,SER002,R002,断線,150,250,user002,2023-01-02 12:00:00,Model002,Board002,101"""
+test-id-1,Y001,LOT001,1,1,SER001,R001,短絡,100,200,user001,2023-01-01 12:00:00,Model001,Board001,100
+test-id-2,Y002,LOT002,2,1,SER002,R002,断線,150,250,user002,2023-01-02 12:00:00,Model002,Board002,101"""
 
 
 @pytest.fixture
