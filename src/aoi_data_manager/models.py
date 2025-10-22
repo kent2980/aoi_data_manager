@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from uuid import uuid5, NAMESPACE_DNS
+from datetime import datetime
 
 
 @dataclass
@@ -17,10 +18,10 @@ class DefectInfo:
         serial (str): QRシリアル
         reference (str): リファレンス
         defect_name (str): 不良名
-        x (int): X座標
-        y (int): Y座標
+        x (float): X座標
+        y (float): Y座標
         aoi_user (str): AOI検査員
-        insert_datetime (str): 更新日時
+        insert_datetime (datetime): 更新日時
         model_label (str): モデルラベル
         board_label (str): 基板ラベル
         kintone_record_id (str): kintoneレコードID
@@ -50,7 +51,7 @@ class DefectInfo:
     """Y座標"""
     aoi_user: str = ""
     """AOI検査員"""
-    insert_datetime: str = ""
+    insert_datetime: datetime = None
     """更新日時"""
     model_label: str = ""
     """モデルラベル"""
@@ -77,7 +78,7 @@ class RepairdInfo:
         id (str): DefectInfoのid
         is_repaird (str): 修理済みかどうか
         parts_type (str): 部品種別
-        insert_datetime (str): 更新日時
+        insert_datetime (datetime): 更新日時
         kintone_record_id (str): kintoneレコードID
     """
 
@@ -87,7 +88,7 @@ class RepairdInfo:
     """修理済みかどうか"""
     parts_type: str = ""
     """部品種別"""
-    insert_datetime: str = ""
+    insert_datetime: datetime = ""
     """更新日時"""
     kintone_record_id: str = ""
     """kintoneレコードID"""
