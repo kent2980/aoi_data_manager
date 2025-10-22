@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from uuid import uuid5, NAMESPACE_DNS
-from sqlmodel import SQLModel
 
 
-class DefectInfo(SQLModel):
+@dataclass
+class DefectInfo:
     """
     不良情報を保持するデータクラス
     idはlot_number, current_board_index, defect_numberの組み合わせで生成する
@@ -67,7 +67,8 @@ class DefectInfo(SQLModel):
             self.id = str(uuid5(NAMESPACE_DNS, namespace))
 
 
-class RepairdInfo(SQLModel):
+@dataclass
+class RepairdInfo:
     """
     修理済み情報を保持するデータクラス
     idはDefectInfoのidと同じものを使用する

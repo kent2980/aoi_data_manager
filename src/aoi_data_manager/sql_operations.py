@@ -1,7 +1,8 @@
 from sqlmodel import SQLModel, create_engine, Session, select
 from typing import List, Optional
 import weakref
-from .db_models import DefectInfo, RepairdInfo
+from .schema import DefectInfoSchema, RepairdInfoSchema
+from .db_models import DefectInfo, RepairdInfo  # テーブル定義用
 
 
 class SqlOperations:
@@ -83,79 +84,157 @@ class SqlOperations:
                 "SqlOperations instance has been closed. Create a new instance or use within a 'with' statement."
             )
 
+    def _schema_to_db_model(self, schema_obj):
+        """スキーマオブジェクトをデータベースモデルに変換"""
+        if isinstance(schema_obj, DefectInfoSchema):
+            return DefectInfo(
+                id=schema_obj.id,
+                line_name=schema_obj.line_name,
+                model_code=schema_obj.model_code,
+                lot_number=schema_obj.lot_number,
+                current_board_index=schema_obj.current_board_index,
+                defect_number=schema_obj.defect_number,
+                serial=schema_obj.serial,
+                reference=schema_obj.reference,
+                defect_name=schema_obj.defect_name,
+                x=schema_obj.x,
+                y=schema_obj.y,
+                aoi_user=schema_obj.aoi_user,
+                insert_datetime=schema_obj.insert_datetime,
+                model_label=schema_obj.model_label,
+                board_label=schema_obj.board_label,
+                kintone_record_id=schema_obj.kintone_record_id,
+            )
+        elif isinstance(schema_obj, RepairdInfoSchema):
+            return RepairdInfo(
+                id=schema_obj.id,
+                is_repaird=schema_obj.is_repaird,
+                parts_type=schema_obj.parts_type,
+                insert_datetime=schema_obj.insert_datetime,
+                kintone_record_id=schema_obj.kintone_record_id,
+            )
+        else:
+            raise ValueError(f"Unsupported schema type: {type(schema_obj)}")
+
+    def _db_model_to_schema(self, db_obj):
+        """データベースモデルをスキーマオブジェクトに変換"""
+        if isinstance(db_obj, DefectInfo):
+            return DefectInfoSchema(
+                id=db_obj.id,
+                line_name=db_obj.line_name,
+                model_code=db_obj.model_code,
+                lot_number=db_obj.lot_number,
+                current_board_index=db_obj.current_board_index,
+                defect_number=db_obj.defect_number,
+                serial=db_obj.serial,
+                reference=db_obj.reference,
+                defect_name=db_obj.defect_name,
+                x=db_obj.x,
+                y=db_obj.y,
+                aoi_user=db_obj.aoi_user,
+                insert_datetime=db_obj.insert_datetime,
+                model_label=db_obj.model_label,
+                board_label=db_obj.board_label,
+                kintone_record_id=db_obj.kintone_record_id,
+            )
+        elif isinstance(db_obj, RepairdInfo):
+            return RepairdInfoSchema(
+                id=db_obj.id,
+                is_repaird=db_obj.is_repaird,
+                parts_type=db_obj.parts_type,
+                insert_datetime=db_obj.insert_datetime,
+                kintone_record_id=db_obj.kintone_record_id,
+            )
+        else:
+            raise ValueError(f"Unsupported database model type: {type(db_obj)}")
+
     def create_tables(self):
         """データベース内にDefectInfoおよびRepairdInfoのテーブルを作成"""
         self._check_connection()
         SQLModel.metadata.create_all(self.engine)
 
-    def insert_defect_info(self, defect_info: DefectInfo):
+    def insert_defect_info(self, defect_info: DefectInfoSchema):
         """DefectInfoデータをデータベースに挿入"""
-        print("DEBUG: Inserting defect_info")
         self._check_connection()
+        # スキーマを __post_init__ 処理
+        defect_info.__post_init__()
+        # スキーマをデータベースモデルに変換
+        db_model = self._schema_to_db_model(defect_info)
         with Session(self.engine) as session:
             try:
-                session.add(defect_info)
+                session.add(db_model)
                 session.commit()
             except Exception as e:
-                print(f"DEBUG: Error type: {type(e).__name__}")
-                print(f"DEBUG: Error message: {str(e)}")
                 session.rollback()
                 raise
 
-    def insert_repaird_info(self, repaird_info: RepairdInfo):
+    def insert_repaird_info(self, repaird_info: RepairdInfoSchema):
         """RepairdInfoデータをデータベースに挿入"""
         self._check_connection()
+        # スキーマを __post_init__ 処理
+        repaird_info.__post_init__()
+        # スキーマをデータベースモデルに変換
+        db_model = self._schema_to_db_model(repaird_info)
         with Session(self.engine) as session:
-            session.add(repaird_info)
+            session.add(db_model)
             session.commit()
 
-    def get_defect_info_by_id(self, defect_id: str) -> Optional[DefectInfo]:
+    def get_defect_info_by_id(self, defect_id: str) -> Optional[DefectInfoSchema]:
         """IDでDefectInfoを取得"""
         self._check_connection()
         with Session(self.engine) as session:
-            return session.get(DefectInfo, defect_id)
+            db_obj = session.get(DefectInfo, defect_id)
+            return self._db_model_to_schema(db_obj) if db_obj else None
 
-    def get_all_defect_info(self) -> List[DefectInfo]:
+    def get_all_defect_info(self) -> List[DefectInfoSchema]:
         """全てのDefectInfoを取得"""
         self._check_connection()
         with Session(self.engine) as session:
             statement = select(DefectInfo)
-            return list(session.exec(statement).all())
+            db_objects = session.exec(statement).all()
+            return [self._db_model_to_schema(db_obj) for db_obj in db_objects]
 
-    def get_defect_info_by_lot(self, lot_number: str) -> List[DefectInfo]:
+    def get_defect_info_by_lot(self, lot_number: str) -> List[DefectInfoSchema]:
         """指図番号でDefectInfoを取得"""
         self._check_connection()
         with Session(self.engine) as session:
             statement = select(DefectInfo).where(DefectInfo.lot_number == lot_number)
-            return list(session.exec(statement).all())
+            db_objects = session.exec(statement).all()
+            return [self._db_model_to_schema(db_obj) for db_obj in db_objects]
 
-    def get_repaird_info_by_id(self, repair_id: str) -> Optional[RepairdInfo]:
+    def get_repaird_info_by_id(self, repair_id: str) -> Optional[RepairdInfoSchema]:
         """IDでRepairdInfoを取得"""
         self._check_connection()
         with Session(self.engine) as session:
-            return session.get(RepairdInfo, repair_id)
+            db_obj = session.get(RepairdInfo, repair_id)
+            return self._db_model_to_schema(db_obj) if db_obj else None
 
-    def get_all_repaird_info(self) -> List[RepairdInfo]:
+    def get_all_repaird_info(self) -> List[RepairdInfoSchema]:
         """全てのRepairdInfoを取得"""
         self._check_connection()
         with Session(self.engine) as session:
             statement = select(RepairdInfo)
-            return list(session.exec(statement).all())
+            db_objects = session.exec(statement).all()
+            return [self._db_model_to_schema(db_obj) for db_obj in db_objects]
 
-    def insert_defect_info_batch(self, defect_infos: List[DefectInfo]):
+    def insert_defect_info_batch(self, defect_infos: List[DefectInfoSchema]):
         """DefectInfoデータを一括挿入"""
         self._check_connection()
         with Session(self.engine) as session:
             for defect_info in defect_infos:
-                session.add(defect_info)
+                defect_info.__post_init__()
+                db_model = self._schema_to_db_model(defect_info)
+                session.add(db_model)
             session.commit()
 
-    def insert_repaird_info_batch(self, repaird_infos: List[RepairdInfo]):
+    def insert_repaird_info_batch(self, repaird_infos: List[RepairdInfoSchema]):
         """RepairdInfoデータを一括挿入"""
         self._check_connection()
         with Session(self.engine) as session:
             for repaird_info in repaird_infos:
-                session.add(repaird_info)
+                repaird_info.__post_init__()
+                db_model = self._schema_to_db_model(repaird_info)
+                session.add(db_model)
             session.commit()
 
     def delete_defect_info(self, defect_id: str) -> bool:

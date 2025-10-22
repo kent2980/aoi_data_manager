@@ -23,7 +23,7 @@ wheels = [
 
 [[package]]
 name = "aoi-data-manager"
-version = "0.1.32"
+version = "0.1.38"
 source = { editable = "." }
 dependencies = [
     { name = "numpy" },
