@@ -299,3 +299,31 @@ class SqlOperations:
                 session.commit()
                 return True
             return False
+
+    @staticmethod
+    def merge_target_database(source_db_url: str, target_db_url: str) -> None:
+        """
+        2つのデータベースをマージ（sourceからtargetへ）
+        新規データは挿入、既存データは更新されます。
+
+        Args:
+            source_db_url (str): ソースデータベースURL
+            target_db_url (str): ターゲットデータベースURL
+        """
+        source_ops = SqlOperations(db_url=source_db_url)
+        target_ops = SqlOperations(db_url=target_db_url)
+
+        try:
+            source_ops.create_tables()
+            target_ops.create_tables()
+
+            # DefectInfoのマージ
+            source_defects = source_ops.get_all_defect_info()
+            target_ops.merge_insert_defect_infos(source_defects)
+
+            # RepairdInfoのマージ
+            source_repairds = source_ops.get_all_repaird_info()
+            target_ops.insert_repaird_info_batch(source_repairds)
+        finally:
+            source_ops.close()
+            target_ops.close()
