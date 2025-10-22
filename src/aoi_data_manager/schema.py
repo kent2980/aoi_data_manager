@@ -4,10 +4,10 @@
 """
 
 from uuid import uuid5, NAMESPACE_DNS
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Field
 from datetime import datetime
 from pydantic import model_validator
-from typing import Any
+from typing import Any, Optional
 
 
 class DefectInfo(SQLModel):
@@ -33,37 +33,37 @@ class DefectInfo(SQLModel):
         kintone_record_id (str): kintoneレコードID
     """
 
-    id: str = ""
+    id: str = Field(default="")
     """不良情報の一意なID"""
-    line_name: str = ""
+    line_name: str = Field(default="")
     """生産ライン"""
-    model_code: str = ""
+    model_code: str = Field(default="")
     """Y番"""
-    lot_number: str = ""
+    lot_number: str = Field(default="")
     """指図"""
-    current_board_index: int = 0
+    current_board_index: int = Field(default=0)
     """基板番号"""
-    defect_number: int = 0
+    defect_number: int = Field(default=0)
     """不良番号"""
-    serial: str = ""
+    serial: str = Field(default="")
     """QRシリアル"""
-    reference: str = ""
+    reference: str = Field(default="")
     """リファレンス"""
-    defect_name: str = ""
+    defect_name: str = Field(default="")
     """不良名"""
-    x: float = 0.0
+    x: float = Field(default=0.0)
     """X座標"""
-    y: float = 0.0
+    y: float = Field(default=0.0)
     """Y座標"""
-    aoi_user: str = ""
+    aoi_user: str = Field(default="")
     """AOI検査員"""
-    insert_datetime: str = ""
+    insert_datetime: str = Field(default="")
     """更新日時"""
-    model_label: str = ""
+    model_label: str = Field(default="")
     """モデルラベル"""
-    board_label: str = ""
+    board_label: str = Field(default="")
     """基板ラベル"""
-    kintone_record_id: str = ""
+    kintone_record_id: str = Field(default="")
     """kintoneレコードID"""
 
     @model_validator(mode="before")
@@ -154,15 +154,15 @@ class RepairdInfo(SQLModel):
         kintone_record_id (str): kintoneレコードID
     """
 
-    id: str = ""
+    id: str = Field(default="")
     """DefectInfoのid"""
-    is_repaird: bool = False
+    is_repaird: bool = Field(default=False)
     """修理済みかどうか"""
-    parts_type: str = ""
+    parts_type: str = Field(default="")
     """部品種別"""
-    insert_datetime: str = ""
+    insert_datetime: str = Field(default="")
     """更新日時"""
-    kintone_record_id: str = ""
+    kintone_record_id: str = Field(default="")
     """kintoneレコードID"""
 
     @model_validator(mode="before")
