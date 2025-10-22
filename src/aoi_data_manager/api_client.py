@@ -57,12 +57,12 @@ class KintoneClient:
                     "current_board_index": {
                         "value": int(item.current_board_index or 0)
                     },
-                    "defect_number": {"value": str(item.defect_number or "")},
+                    "defect_number": {"value": int(item.defect_number or "")},
                     "serial": {"value": str(item.serial or "")},
                     "reference": {"value": str(item.reference or "")},
                     "defect_name": {"value": str(item.defect_name or "")},
-                    "x": {"value": int(item.x or 0)},
-                    "y": {"value": int(item.y or 0)},
+                    "x": {"value": float(item.x or 0)},
+                    "y": {"value": float(item.y or 0)},
                     "aoi_user": {"value": str(item.aoi_user or "")},
                     "insert_datetime": {
                         "value": str(item.insert_datetime or "")
