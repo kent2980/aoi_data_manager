@@ -278,6 +278,15 @@ class SqlOperations:
                 session.add(db_model)
             session.commit()
 
+    def merge_repaird_info_batch(self, repaird_infos: List[RepairdInfo]):
+        """RepairdInfoデータを一括マージ挿入（存在すれば更新、なければ挿入）"""
+        self._check_connection()
+        with Session(self.engine) as session:
+            for repaird_info in repaird_infos:
+                db_model = self._schema_to_db_model(repaird_info)
+                session.merge(db_model)
+            session.commit()
+
     def delete_defect_info(self, defect_id: str) -> bool:
         """DefectInfoを削除"""
         self._check_connection()
@@ -301,7 +310,9 @@ class SqlOperations:
             return False
 
     @staticmethod
-    def merge_target_database(source_db_url: str, target_db_url: str) -> None:
+    def merge_target_database(
+        source_db_url: str, target_db_url: str, db_name: str
+    ) -> None:
         """
         2つのデータベースをマージ（sourceからtargetへ）
         新規データは挿入、既存データは更新されます。
@@ -309,9 +320,10 @@ class SqlOperations:
         Args:
             source_db_url (str): ソースデータベースURL
             target_db_url (str): ターゲットデータベースURL
+            db_name (str): データベース名
         """
-        source_ops = SqlOperations(db_url=source_db_url)
-        target_ops = SqlOperations(db_url=target_db_url)
+        source_ops = SqlOperations(db_url=source_db_url, db_name=db_name)
+        target_ops = SqlOperations(db_url=target_db_url, db_name=db_name)
 
         try:
             source_ops.create_tables()
@@ -323,7 +335,7 @@ class SqlOperations:
 
             # RepairdInfoのマージ
             source_repairds = source_ops.get_all_repaird_info()
-            target_ops.insert_repaird_info_batch(source_repairds)
+            target_ops.merge_repaird_info_batch(source_repairds)
         finally:
             source_ops.close()
             target_ops.close()
