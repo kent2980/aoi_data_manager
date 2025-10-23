@@ -308,6 +308,29 @@ class SqlOperations:
                 return True
             return False
 
+    def delete_defect_infos(self, defect_ids: List[str]) -> int:
+        """
+        複数のDefectInfoを削除
+
+        Args:
+            defect_ids (List[str]): 削除するDefectInfoのIDリスト
+        Returns:
+            int: 削除したDefectInfoの数
+        Examples:
+            sql_ops = SqlOperations(db_url="path/to/db")
+            deleted_count = sql_ops.delete_defect_infos(["defect_id_12345", "defect_id_67890"])
+        """
+        self._check_connection()
+        deleted_count = 0
+        with Session(self.engine) as session:
+            for defect_id in defect_ids:
+                defect_info = session.get(DefectInfoTable, defect_id)
+                if defect_info:
+                    session.delete(defect_info)
+                    deleted_count += 1
+            session.commit()
+        return deleted_count
+
     def delete_repaird_info(self, repair_id: str) -> bool:
         """RepairdInfoを削除"""
         self._check_connection()
@@ -318,6 +341,19 @@ class SqlOperations:
                 session.commit()
                 return True
             return False
+
+    def delete_repaird_infos(self, repair_ids: List[str]) -> int:
+        """複数のRepairdInfoを削除"""
+        self._check_connection()
+        deleted_count = 0
+        with Session(self.engine) as session:
+            for repair_id in repair_ids:
+                repaird_info = session.get(RepairdInfoTable, repair_id)
+                if repaird_info:
+                    session.delete(repaird_info)
+                    deleted_count += 1
+            session.commit()
+        return deleted_count
 
     @staticmethod
     def merge_target_database(
