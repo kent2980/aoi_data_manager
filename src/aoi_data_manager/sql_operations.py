@@ -288,7 +288,17 @@ class SqlOperations:
             session.commit()
 
     def delete_defect_info(self, defect_id: str) -> bool:
-        """DefectInfoを削除"""
+        """
+        DefectInfoを削除
+
+        Args:
+            defect_id (str): 削除するDefectInfoのID
+        Returns:
+            bool: 削除が成功したかどうか
+        Examples:
+            sql_ops = SqlOperations(db_url="path/to/db")
+            result = sql_ops.delete_defect_info("defect_id_12345")
+        """
         self._check_connection()
         with Session(self.engine) as session:
             defect_info = session.get(DefectInfoTable, defect_id)
