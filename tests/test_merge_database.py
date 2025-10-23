@@ -586,7 +586,9 @@ class TestMergeDatabaseFunction:
             # 結果確認
             with SqlOperations(db_url=target_dir) as target_ops:
                 defects = target_ops.get_all_defect_info()
-                assert len(defects) == 3  # defect1（保持）、defect3（更新）、new_defect（新規）
+                assert (
+                    len(defects) == 3
+                )  # defect1（保持）、defect3（更新）、new_defect（新規）
 
                 lot_numbers = {d.lot_number: d for d in defects}
 
