@@ -75,7 +75,7 @@ class DefectInfo(SQLModel):
                 lot_number = values.get("lot_number", "")
                 current_board_index = values.get("current_board_index", 0)
                 defect_number = values.get("defect_number", 0)
-                namespace = f"{lot_number}_{current_board_index}_{defect_number}"
+                namespace = f"{lot_number}_{current_board_index}_{defect_number}_{datetime.now()}"
                 values["id"] = str(uuid5(NAMESPACE_DNS, namespace))
 
             if not values.get("insert_datetime"):
