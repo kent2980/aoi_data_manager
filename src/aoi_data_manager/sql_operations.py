@@ -387,8 +387,7 @@ class SqlOperations:
 
             # DefectInfoの削除
             if delete_defect_ids:
-                for defect_id in delete_defect_ids:
-                    target_ops.delete_defect_info(defect_id)
+                target_ops.delete_defect_infos(delete_defect_ids)
 
             # RepairdInfoのマージ
             source_repairds = source_ops.get_all_repaird_info()
@@ -396,8 +395,7 @@ class SqlOperations:
 
             # RepairdInfoの削除
             if delete_repaird_ids:
-                for repaird_id in delete_repaird_ids:
-                    target_ops.delete_repaird_info(repaird_id)
+                target_ops.delete_repaird_infos(delete_repaird_ids)
 
         finally:
             source_ops.close()
