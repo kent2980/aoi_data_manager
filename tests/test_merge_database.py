@@ -24,7 +24,9 @@ class TestMergeDatabaseFunction:
                 target_ops.create_tables()
 
             # マージ実行
-            SqlOperations.merge_target_database(source_dir, target_dir)
+            SqlOperations.merge_target_database(
+                source_dir, target_dir, db_name="aoi_data.db"
+            )
 
             # 結果確認
             with SqlOperations(db_url=target_dir) as target_ops:
@@ -65,7 +67,9 @@ class TestMergeDatabaseFunction:
                 target_ops.create_tables()
 
             # マージ実行
-            SqlOperations.merge_target_database(source_dir, target_dir)
+            SqlOperations.merge_target_database(
+                source_dir, target_dir, db_name="aoi_data.db"
+            )
 
             # 結果確認
             with SqlOperations(db_url=target_dir) as target_ops:
@@ -77,7 +81,7 @@ class TestMergeDatabaseFunction:
     def test_merge_with_duplicate_data(self):
         """重複データのマージ（更新）"""
         with tempfile.TemporaryDirectory() as source_dir, tempfile.TemporaryDirectory() as target_dir:
-            # 同じIDのデータを両方に追加
+            # 同じIDのデータを両方に追加するため、同じオブジェクトを使用
             defect_base = DefectInfo(
                 line_name="LINE_01",
                 model_code="Y001",
@@ -89,15 +93,20 @@ class TestMergeDatabaseFunction:
                 y=200.0,
             )
 
-            # ターゲットに古いデータ
+            # 一度IDを生成
+            original_id = defect_base.id
+            original_datetime = defect_base.insert_datetime
+
+            # ターゲットに元のデータを挿入
             with SqlOperations(db_url=target_dir) as target_ops:
                 target_ops.create_tables()
                 target_ops.insert_defect_info(defect_base)
 
-            # ソースに更新データ（同じIDで異なる内容）
+            # ソースに同じIDで更新されたデータを挿入（手動でIDとdatetimeを設定）
             with SqlOperations(db_url=source_dir) as source_ops:
                 source_ops.create_tables()
                 defect_updated = DefectInfo(
+                    id=original_id,  # 同じIDを使用
                     line_name="LINE_01_UPDATED",
                     model_code="Y001",
                     lot_number="LOT001",
@@ -106,11 +115,14 @@ class TestMergeDatabaseFunction:
                     defect_name="scratch_updated",
                     x=150.0,
                     y=250.0,
+                    insert_datetime=original_datetime,  # 同じdatetimeを使用
                 )
                 source_ops.insert_defect_info(defect_updated)
 
             # マージ実行
-            SqlOperations.merge_target_database(source_dir, target_dir)
+            SqlOperations.merge_target_database(
+                source_dir, target_dir, db_name="aoi_data.db"
+            )
 
             # 結果確認 - データは1件のまま、内容が更新されている
             with SqlOperations(db_url=target_dir) as target_ops:
@@ -125,25 +137,31 @@ class TestMergeDatabaseFunction:
         """新規と既存が混在したデータのマージ"""
         with tempfile.TemporaryDirectory() as source_dir, tempfile.TemporaryDirectory() as target_dir:
             # ターゲットにデータ1追加
+            defect1 = DefectInfo(
+                line_name="LINE_01",
+                model_code="Y001",
+                lot_number="LOT001",
+                current_board_index=1,
+                defect_number=1,
+                defect_name="scratch",
+                x=100.0,
+                y=200.0,
+            )
+
+            # IDとdatetimeを保存
+            original_id = defect1.id
+            original_datetime = defect1.insert_datetime
+
             with SqlOperations(db_url=target_dir) as target_ops:
                 target_ops.create_tables()
-                defect1 = DefectInfo(
-                    line_name="LINE_01",
-                    model_code="Y001",
-                    lot_number="LOT001",
-                    current_board_index=1,
-                    defect_number=1,
-                    defect_name="scratch",
-                    x=100.0,
-                    y=200.0,
-                )
                 target_ops.insert_defect_info(defect1)
 
             # ソースにデータ1（更新）とデータ2（新規）を追加
             with SqlOperations(db_url=source_dir) as source_ops:
                 source_ops.create_tables()
-                # 既存データの更新版
+                # 既存データの更新版（同じIDを使用）
                 defect1_updated = DefectInfo(
+                    id=original_id,  # 同じIDを使用
                     line_name="LINE_01_UPDATED",
                     model_code="Y001",
                     lot_number="LOT001",
@@ -152,6 +170,7 @@ class TestMergeDatabaseFunction:
                     defect_name="scratch_updated",
                     x=150.0,
                     y=250.0,
+                    insert_datetime=original_datetime,  # 同じdatetimeを使用
                 )
                 # 新規データ
                 defect2 = DefectInfo(
@@ -168,7 +187,9 @@ class TestMergeDatabaseFunction:
                 source_ops.insert_defect_info(defect2)
 
             # マージ実行
-            SqlOperations.merge_target_database(source_dir, target_dir)
+            SqlOperations.merge_target_database(
+                source_dir, target_dir, db_name="aoi_data.db"
+            )
 
             # 結果確認
             with SqlOperations(db_url=target_dir) as target_ops:
@@ -217,7 +238,9 @@ class TestMergeDatabaseFunction:
                 target_ops.create_tables()
 
             # マージ実行
-            SqlOperations.merge_target_database(source_dir, target_dir)
+            SqlOperations.merge_target_database(
+                source_dir, target_dir, db_name="aoi_data.db"
+            )
 
             # 結果確認
             with SqlOperations(db_url=target_dir) as target_ops:
@@ -254,7 +277,9 @@ class TestMergeDatabaseFunction:
                 target_ops.create_tables()
 
             # マージ実行
-            SqlOperations.merge_target_database(source_dir, target_dir)
+            SqlOperations.merge_target_database(
+                source_dir, target_dir, db_name="aoi_data.db"
+            )
 
             # 結果確認
             with SqlOperations(db_url=target_dir) as target_ops:
@@ -267,7 +292,9 @@ class TestMergeDatabaseFunction:
             # 無効なパスでマージを試みる
             with pytest.raises(Exception):
                 SqlOperations.merge_target_database(
-                    source_db_url="/invalid/path/source", target_db_url=valid_dir
+                    source_db_url="/invalid/path/source",
+                    target_db_url=valid_dir,
+                    db_name="aoi_data.db",
                 )
 
     def test_merge_idempotency(self):
@@ -293,7 +320,9 @@ class TestMergeDatabaseFunction:
                 target_ops.create_tables()
 
             # 1回目のマージ
-            SqlOperations.merge_target_database(source_dir, target_dir)
+            SqlOperations.merge_target_database(
+                source_dir, target_dir, db_name="aoi_data.db"
+            )
 
             # 結果確認
             with SqlOperations(db_url=target_dir) as target_ops:
@@ -301,7 +330,9 @@ class TestMergeDatabaseFunction:
                 assert len(defects_first) == 1
 
             # 2回目のマージ（同じ操作）
-            SqlOperations.merge_target_database(source_dir, target_dir)
+            SqlOperations.merge_target_database(
+                source_dir, target_dir, db_name="aoi_data.db"
+            )
 
             # 結果確認（データは1件のまま）
             with SqlOperations(db_url=target_dir) as target_ops:
@@ -309,3 +340,356 @@ class TestMergeDatabaseFunction:
                 assert len(defects_second) == 1
                 assert defects_second[0].id == defects_first[0].id
                 assert defects_second[0].line_name == defects_first[0].line_name
+
+    def test_merge_with_delete_sync(self):
+        """削除を使ったデータ同期のテスト"""
+        with tempfile.TemporaryDirectory() as source_dir, tempfile.TemporaryDirectory() as target_dir:
+            # ターゲットに3件のデータを追加
+            defect1 = DefectInfo(
+                line_name="LINE_01",
+                model_code="Y001",
+                lot_number="LOT001",
+                current_board_index=1,
+                defect_number=1,
+                defect_name="scratch",
+                x=100.0,
+                y=200.0,
+            )
+            defect2 = DefectInfo(
+                line_name="LINE_02",
+                model_code="Y002",
+                lot_number="LOT002",
+                current_board_index=1,
+                defect_number=1,
+                defect_name="chip",
+                x=150.0,
+                y=250.0,
+            )
+            defect3 = DefectInfo(
+                line_name="LINE_03",
+                model_code="Y003",
+                lot_number="LOT003",
+                current_board_index=1,
+                defect_number=1,
+                defect_name="crack",
+                x=200.0,
+                y=300.0,
+            )
+
+            # IDを保存
+            id1 = defect1.id
+            id2 = defect2.id
+            id3 = defect3.id
+
+            with SqlOperations(db_url=target_dir) as target_ops:
+                target_ops.create_tables()
+                target_ops.insert_defect_info(defect1)
+                target_ops.insert_defect_info(defect2)
+                target_ops.insert_defect_info(defect3)
+
+            # ソースには新しいデータ1件のみ（他は削除対象）
+            defect_new = DefectInfo(
+                line_name="LINE_NEW",
+                model_code="Y999",
+                lot_number="LOT999",
+                current_board_index=1,
+                defect_number=1,
+                defect_name="new_defect",
+                x=999.0,
+                y=999.0,
+            )
+
+            with SqlOperations(db_url=source_dir) as source_ops:
+                source_ops.create_tables()
+                source_ops.insert_defect_info(defect_new)
+
+            # マージ実行：新規データを追加し、指定したIDを削除
+            SqlOperations.merge_target_database(
+                source_dir,
+                target_dir,
+                db_name="aoi_data.db",
+                delete_defect_ids=[id2, id3],  # defect2とdefect3を削除
+            )
+
+            # 結果確認
+            with SqlOperations(db_url=target_dir) as target_ops:
+                defects = target_ops.get_all_defect_info()
+                # defect1（残存）とdefect_new（新規）の2件のみ
+                assert len(defects) == 2
+
+                lot_numbers = [d.lot_number for d in defects]
+                assert "LOT001" in lot_numbers  # defect1は残る
+                assert "LOT999" in lot_numbers  # defect_newは追加
+                assert "LOT002" not in lot_numbers  # defect2は削除
+                assert "LOT003" not in lot_numbers  # defect3は削除
+
+    def test_merge_with_repaird_delete_sync(self):
+        """RepairdInfo削除を使ったデータ同期のテスト"""
+        with tempfile.TemporaryDirectory() as source_dir, tempfile.TemporaryDirectory() as target_dir:
+            # ターゲットにDefectInfoとRepairdInfoを追加
+            defect1 = DefectInfo(
+                line_name="LINE_01",
+                model_code="Y001",
+                lot_number="LOT001",
+                current_board_index=1,
+                defect_number=1,
+                defect_name="scratch",
+                x=100.0,
+                y=200.0,
+            )
+            defect2 = DefectInfo(
+                line_name="LINE_02",
+                model_code="Y002",
+                lot_number="LOT002",
+                current_board_index=1,
+                defect_number=1,
+                defect_name="chip",
+                x=150.0,
+                y=250.0,
+            )
+
+            id1 = defect1.id
+            id2 = defect2.id
+
+            repair1 = RepairdInfo(
+                id=id1,
+                is_repaird=True,
+                parts_type="CHIP",
+                kintone_record_id="kr001",
+            )
+            repair2 = RepairdInfo(
+                id=id2,
+                is_repaird=False,
+                parts_type="RESISTOR",
+                kintone_record_id="kr002",
+            )
+
+            with SqlOperations(db_url=target_dir) as target_ops:
+                target_ops.create_tables()
+                target_ops.insert_defect_info(defect1)
+                target_ops.insert_defect_info(defect2)
+                target_ops.insert_repaird_info(repair1)
+                target_ops.insert_repaird_info(repair2)
+
+            # ソースは空
+            with SqlOperations(db_url=source_dir) as source_ops:
+                source_ops.create_tables()
+
+            # マージ実行：repair2のみ削除
+            SqlOperations.merge_target_database(
+                source_dir,
+                target_dir,
+                db_name="aoi_data.db",
+                delete_repaird_ids=[id2],
+            )
+
+            # 結果確認
+            with SqlOperations(db_url=target_dir) as target_ops:
+                defects = target_ops.get_all_defect_info()
+                repairs = target_ops.get_all_repaird_info()
+
+                # DefectInfoは2件とも残る
+                assert len(defects) == 2
+
+                # RepairdInfoはrepair1のみ残る
+                assert len(repairs) == 1
+                assert repairs[0].id == id1
+                assert repairs[0].parts_type == "CHIP"
+
+    def test_merge_full_sync(self):
+        """完全同期テスト：追加・更新・削除の組み合わせ"""
+        with tempfile.TemporaryDirectory() as source_dir, tempfile.TemporaryDirectory() as target_dir:
+            # ターゲットに初期データ
+            target_defect1 = DefectInfo(
+                line_name="TARGET_01",
+                model_code="Y001",
+                lot_number="LOT001",
+                current_board_index=1,
+                defect_number=1,
+                defect_name="old_defect",
+                x=100.0,
+                y=200.0,
+            )
+            target_defect2 = DefectInfo(
+                line_name="TARGET_02",
+                model_code="Y002",
+                lot_number="LOT002",
+                current_board_index=1,
+                defect_number=1,
+                defect_name="to_delete",
+                x=150.0,
+                y=250.0,
+            )
+            target_defect3 = DefectInfo(
+                line_name="TARGET_03",
+                model_code="Y003",
+                lot_number="LOT003",
+                current_board_index=1,
+                defect_number=1,
+                defect_name="to_update",
+                x=200.0,
+                y=300.0,
+            )
+
+            id1 = target_defect1.id
+            id2 = target_defect2.id
+            id3 = target_defect3.id
+            dt3 = target_defect3.insert_datetime
+
+            with SqlOperations(db_url=target_dir) as target_ops:
+                target_ops.create_tables()
+                target_ops.insert_defect_info(target_defect1)
+                target_ops.insert_defect_info(target_defect2)
+                target_ops.insert_defect_info(target_defect3)
+
+            # ソースデータ
+            with SqlOperations(db_url=source_dir) as source_ops:
+                source_ops.create_tables()
+
+                # 更新データ（defect3の内容を変更、同じIDを使用）
+                updated_defect3 = DefectInfo(
+                    id=id3,
+                    line_name="SOURCE_03_UPDATED",
+                    model_code="Y003",
+                    lot_number="LOT003",
+                    current_board_index=1,
+                    defect_number=1,
+                    defect_name="updated_defect",
+                    x=999.0,
+                    y=999.0,
+                    insert_datetime=dt3,
+                )
+
+                # 新規データ
+                new_defect = DefectInfo(
+                    line_name="SOURCE_NEW",
+                    model_code="Y999",
+                    lot_number="LOT999",
+                    current_board_index=1,
+                    defect_number=1,
+                    defect_name="new_defect",
+                    x=500.0,
+                    y=600.0,
+                )
+
+                source_ops.insert_defect_info(updated_defect3)
+                source_ops.insert_defect_info(new_defect)
+
+            # マージ実行：defect2を削除
+            SqlOperations.merge_target_database(
+                source_dir,
+                target_dir,
+                db_name="aoi_data.db",
+                delete_defect_ids=[id2],
+            )
+
+            # 結果確認
+            with SqlOperations(db_url=target_dir) as target_ops:
+                defects = target_ops.get_all_defect_info()
+                assert len(defects) == 3  # defect1（保持）、defect3（更新）、new_defect（新規）
+
+                lot_numbers = {d.lot_number: d for d in defects}
+
+                # defect1は変更なし
+                assert "LOT001" in lot_numbers
+                assert lot_numbers["LOT001"].line_name == "TARGET_01"
+
+                # defect2は削除
+                assert "LOT002" not in lot_numbers
+
+                # defect3は更新
+                assert "LOT003" in lot_numbers
+                assert lot_numbers["LOT003"].line_name == "SOURCE_03_UPDATED"
+                assert lot_numbers["LOT003"].defect_name == "updated_defect"
+                assert lot_numbers["LOT003"].x == 999.0
+
+                # new_defectは新規追加
+                assert "LOT999" in lot_numbers
+                assert lot_numbers["LOT999"].line_name == "SOURCE_NEW"
+
+    def test_merge_delete_nonexistent_ids(self):
+        """存在しないIDを削除指定した場合のテスト"""
+        with tempfile.TemporaryDirectory() as source_dir, tempfile.TemporaryDirectory() as target_dir:
+            # ターゲットにデータ追加
+            defect = DefectInfo(
+                line_name="LINE_01",
+                model_code="Y001",
+                lot_number="LOT001",
+                current_board_index=1,
+                defect_number=1,
+                defect_name="scratch",
+                x=100.0,
+                y=200.0,
+            )
+
+            with SqlOperations(db_url=target_dir) as target_ops:
+                target_ops.create_tables()
+                target_ops.insert_defect_info(defect)
+
+            # ソース作成
+            with SqlOperations(db_url=source_dir) as source_ops:
+                source_ops.create_tables()
+
+            # 存在しないIDを削除指定
+            SqlOperations.merge_target_database(
+                source_dir,
+                target_dir,
+                db_name="aoi_data.db",
+                delete_defect_ids=["nonexistent_id_1", "nonexistent_id_2"],
+            )
+
+            # 結果確認：既存データは影響を受けない
+            with SqlOperations(db_url=target_dir) as target_ops:
+                defects = target_ops.get_all_defect_info()
+                assert len(defects) == 1
+                assert defects[0].lot_number == "LOT001"
+
+    def test_merge_delete_all_data(self):
+        """全データ削除の同期テスト"""
+        with tempfile.TemporaryDirectory() as source_dir, tempfile.TemporaryDirectory() as target_dir:
+            # ターゲットにデータ追加
+            defect1 = DefectInfo(
+                line_name="LINE_01",
+                model_code="Y001",
+                lot_number="LOT001",
+                current_board_index=1,
+                defect_number=1,
+                defect_name="scratch",
+                x=100.0,
+                y=200.0,
+            )
+            defect2 = DefectInfo(
+                line_name="LINE_02",
+                model_code="Y002",
+                lot_number="LOT002",
+                current_board_index=1,
+                defect_number=1,
+                defect_name="chip",
+                x=150.0,
+                y=250.0,
+            )
+
+            id1 = defect1.id
+            id2 = defect2.id
+
+            with SqlOperations(db_url=target_dir) as target_ops:
+                target_ops.create_tables()
+                target_ops.insert_defect_info(defect1)
+                target_ops.insert_defect_info(defect2)
+
+            # ソースは空
+            with SqlOperations(db_url=source_dir) as source_ops:
+                source_ops.create_tables()
+
+            # 全データを削除
+            SqlOperations.merge_target_database(
+                source_dir,
+                target_dir,
+                db_name="aoi_data.db",
+                delete_defect_ids=[id1, id2],
+            )
+
+            # 結果確認：全データが削除される
+            with SqlOperations(db_url=target_dir) as target_ops:
+                defects = target_ops.get_all_defect_info()
+                assert len(defects) == 0
