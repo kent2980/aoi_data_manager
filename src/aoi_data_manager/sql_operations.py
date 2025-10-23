@@ -311,7 +311,11 @@ class SqlOperations:
 
     @staticmethod
     def merge_target_database(
-        source_db_url: str, target_db_url: str, db_name: str
+        source_db_url: str,
+        target_db_url: str,
+        db_name: str,
+        delete_defect_ids: List[str] = None,
+        delete_repaird_ids: List[str] = None,
     ) -> None:
         """
         2つのデータベースをマージ（sourceからtargetへ）
@@ -321,6 +325,8 @@ class SqlOperations:
             source_db_url (str): ソースデータベースURL
             target_db_url (str): ターゲットデータベースURL
             db_name (str): データベース名
+            delete_defect_ids (List[str], optional): ターゲットデータベースから削除するDefectInfoのIDリスト. Defaults to None.
+            delete_repaird_ids (List[str], optional): ターゲットデータベースから削除するRepairdInfoのIDリスト. Defaults to None.
         """
         source_ops = SqlOperations(db_url=source_db_url, db_name=db_name)
         target_ops = SqlOperations(db_url=target_db_url, db_name=db_name)
@@ -333,9 +339,20 @@ class SqlOperations:
             source_defects = source_ops.get_all_defect_info()
             target_ops.merge_insert_defect_infos(source_defects)
 
+            # DefectInfoの削除
+            if delete_defect_ids:
+                for defect_id in delete_defect_ids:
+                    target_ops.delete_defect_info(defect_id)
+
             # RepairdInfoのマージ
             source_repairds = source_ops.get_all_repaird_info()
             target_ops.merge_repaird_info_batch(source_repairds)
+
+            # RepairdInfoの削除
+            if delete_repaird_ids:
+                for repaird_id in delete_repaird_ids:
+                    target_ops.delete_repaird_info(repaird_id)
+
         finally:
             source_ops.close()
             target_ops.close()
