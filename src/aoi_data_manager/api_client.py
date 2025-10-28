@@ -30,9 +30,7 @@ class KintoneClient:
         }
         """HTTPヘッダー"""
 
-    def post_defect_records(
-        self, defect_list: List[DefectInfo], image_path: str | None = None
-    ) -> List[DefectInfo]:
+    def post_defect_records(self, defect_list: List[DefectInfo]) -> List[DefectInfo]:
         """
         不良レコードをKintoneに送信
         ### Args:
@@ -77,8 +75,8 @@ class KintoneClient:
                 },
             }
             # 画像パスが指定されている場合、画像をアップロードしてfileKeyを設定
-            if image_path:
-                file_key = self.upload_image_file(image_path)
+            if item.image_path != "":
+                file_key = self.upload_image_file(item.image_path)
                 defect_dict["record"]["defect_image"] = {
                     "value": [{"fileKey": file_key}]
                 }

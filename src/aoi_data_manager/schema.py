@@ -30,7 +30,9 @@ class DefectInfo(SQLModel):
         insert_datetime (str): 更新日時
         model_label (str): モデルラベル
         board_label (str): 基板ラベル
+        board_number_label (str): 基板番号ラベル
         kintone_record_id (str): kintoneレコードID
+        image_path (str):画像パス
     """
 
     id: str = Field(default="")
@@ -67,6 +69,7 @@ class DefectInfo(SQLModel):
     """基板番号ラベル"""
     kintone_record_id: str = Field(default="")
     """kintoneレコードID"""
+    image_path: str = Field(default="")
 
     @model_validator(mode="before")
     @classmethod
@@ -101,6 +104,7 @@ class DefectInfo(SQLModel):
         model_label: str = "",
         board_label: str = "",
         kintone_record_id: str = "",
+        image_path: str = "",
     ) -> "DefectInfo":
         """
         DefectInfoインスタンスを作成するファクトリメソッド

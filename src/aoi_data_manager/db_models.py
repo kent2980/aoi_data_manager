@@ -25,7 +25,10 @@ class DefectInfoTable(SQLModel, table=True):
         insert_datetime (str): 更新日時
         model_label (str): モデルラベル
         board_label (str): 基板ラベル
+        board_number_label (str): 基板番号ラベル
         kintone_record_id (str): kintoneレコードID
+        image_path (str): 画像パス
+
     """
 
     id: str = Field(default="", description="不良情報の一意なID", primary_key=True)
@@ -64,6 +67,8 @@ class DefectInfoTable(SQLModel, table=True):
     """基板番号ラベル"""
     kintone_record_id: str = Field(default="", description="kintoneレコードID")
     """kintoneレコードID"""
+    image_path: str = Field(default="", description="kintoneレコードID")
+    """画像パス"""
 
     @model_validator(mode="before")
     @classmethod
