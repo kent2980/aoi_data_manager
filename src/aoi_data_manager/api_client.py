@@ -30,7 +30,9 @@ class KintoneClient:
         }
         """HTTPヘッダー"""
 
-    def post_defect_records(self, defect_list: List[DefectInfo]) -> List[DefectInfo]:
+    def post_defect_records(
+        self, defect_list: List[DefectInfo], image_path: str = None
+    ) -> List[DefectInfo]:
         """
         不良レコードをKintoneに送信
         ### Args:
@@ -48,6 +50,8 @@ class KintoneClient:
         defect_list_dicts = []
         for item in defect_list:
             board_number_label = f"{item.lot_number}_{item.current_board_index}"
+            # 画像ファイルをアップロード
+            image_url = self.upload_image_file(image_path)
             # Noneや空の値をチェック
             defect_dict = {
                 "updateKey": {"field": "unique_id", "value": str(item.id or "")},
@@ -71,8 +75,8 @@ class KintoneClient:
                     },  # 修正
                     "model_label": {"value": str(item.model_label or "")},
                     "board_label": {"value": str(item.board_label or "")},
-                    "board_number_label": {"value": str(item.board_number_label or "")},
-                    "defect_image": {"value": [{"fileKey": str(item.image_url or "")}]},
+                    "board_number_label": {"value": board_number_label},
+                    "defect_image": {"value": [{"fileKey": image_url}]},
                 },
             }
             defect_list_dicts.append(defect_dict)

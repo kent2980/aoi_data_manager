@@ -62,8 +62,6 @@ class DefectInfoTable(SQLModel, table=True):
     """基板ラベル"""
     board_number_label: str = Field(default="", description="基板番号ラベル")
     """基板番号ラベル"""
-    image_url: Optional[str] = Field(default=None, description="画像URL")
-    """画像URL"""
     kintone_record_id: str = Field(default="", description="kintoneレコードID")
     """kintoneレコードID"""
 
