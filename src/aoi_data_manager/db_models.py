@@ -72,7 +72,7 @@ class DefectInfoTable(SQLModel, table=True):
                 lot_number = values.get("lot_number", "")
                 current_board_index = values.get("current_board_index", 0)
                 defect_number = values.get("defect_number", 0)
-                namespace = f"{lot_number}_{current_board_index}_{defect_number}_{datetime.now()}"
+                namespace = f"{lot_number}_{current_board_index}_{defect_number}"
                 values["id"] = str(uuid5(NAMESPACE_DNS, namespace))
         return values
 
