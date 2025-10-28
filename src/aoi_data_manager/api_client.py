@@ -1,6 +1,7 @@
 import requests
 import json
 from typing import List, Dict, Any
+from pathlib import Path
 from .schema import DefectInfo, RepairdInfo
 
 
@@ -29,11 +30,14 @@ class KintoneClient:
         }
         """HTTPヘッダー"""
 
-    def post_defect_records(self, defect_list: List[DefectInfo]) -> List[DefectInfo]:
+    def post_defect_records(
+        self, defect_list: List[DefectInfo], image_url: str = ""
+    ) -> List[DefectInfo]:
         """
         不良レコードをKintoneに送信
         ### Args:
             defect_list (List[DefectInfo]): 不良情報リスト
+            image_url (str): 画像ファイルのURL
         ### Raises:
             ValueError: API送信エラー
         ### Returns:
@@ -69,6 +73,7 @@ class KintoneClient:
                     },  # 修正
                     "model_label": {"value": str(item.model_label or "")},
                     "board_label": {"value": str(item.board_label or "")},
+                    "defect_image": {"value": image_url},
                 },
             }
             defect_list_dicts.append(defect_dict)
@@ -177,3 +182,59 @@ class KintoneClient:
             return response.status_code == 200
         except Exception:
             return False
+
+    def upload_file(self, file_path: str) -> str:
+        """
+        画像ファイルをKintoneにアップロードしてURLを返す
+        ### Args:
+            file_path (str): アップロードするファイルのパス
+        ### Raises:
+            ValueError: ファイルが存在しない場合
+            ValueError: サポートされていないファイル形式
+            ValueError: APIアップロードエラー
+        ### Returns:
+            str: アップロードされたファイルのURL
+        """
+        # ファイルの存在確認
+        path = Path(file_path)
+        if not path.exists():
+            raise ValueError(f"ファイルが存在しません: {file_path}")
+
+        # ファイル拡張子からMIMEタイプを判定
+        mime_types = {
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".png": "image/png",
+            ".gif": "image/gif",
+            ".bmp": "image/bmp",
+        }
+        file_ext = path.suffix.lower()
+        mime_type = mime_types.get(file_ext)
+
+        if mime_type is None:
+            raise ValueError(f"サポートされていないファイル形式: {file_ext}")
+
+        # APIエンドポイントURL
+        url = f"{self.base_url}/file.json"
+
+        # ヘッダー(Content-Typeは指定しない)
+        headers = {
+            "X-Cybozu-API-Token": self.api_token,
+        }
+
+        # ファイルを開いてアップロード
+        with open(file_path, "rb") as f:
+            files = {"file": (path.name, f, mime_type)}
+            response = requests.post(url, headers=headers, files=files)
+
+        # エラーチェック
+        if response.status_code != 200:
+            raise ValueError(f"APIアップロードエラー: {response.json()}")
+
+        # ファイルキーを取得してURLを構築
+        file_key = response.json()["fileKey"]
+        file_url = (
+            f"https://{self.subdomain}.cybozu.com/k/v1/file.json?fileKey={file_key}"
+        )
+
+        return file_url
