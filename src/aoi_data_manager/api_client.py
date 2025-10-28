@@ -31,7 +31,7 @@ class KintoneClient:
         """HTTPヘッダー"""
 
     def post_defect_records(
-        self, defect_list: List[DefectInfo], image_path: str = None
+        self, defect_list: List[DefectInfo], image_path: str | None = None
     ) -> List[DefectInfo]:
         """
         不良レコードをKintoneに送信
