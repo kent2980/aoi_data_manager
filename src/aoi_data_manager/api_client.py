@@ -183,7 +183,7 @@ class KintoneClient:
         except Exception:
             return False
 
-    def upload_file(self, file_path: str) -> str:
+    def upload_image_file(self, file_path: str) -> str:
         """
         画像ファイルをKintoneにアップロードしてURLを返す
         ### Args:
