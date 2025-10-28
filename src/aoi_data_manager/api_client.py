@@ -191,7 +191,7 @@ class KintoneClient:
 
     def upload_image_file(self, file_path: str) -> str:
         """
-        画像ファイルをKintoneにアップロードしてURLを返す
+        画像ファイルをKintoneにアップロードしてfileKeyを返す
         ### Args:
             file_path (str): アップロードするファイルのパス
         ### Raises:
@@ -199,7 +199,7 @@ class KintoneClient:
             ValueError: サポートされていないファイル形式
             ValueError: APIアップロードエラー
         ### Returns:
-            str: アップロードされたファイルのURL
+            str: アップロードされたファイルのfileKey
         """
         # ファイルの存在確認
         path = Path(file_path)
@@ -237,10 +237,6 @@ class KintoneClient:
         if response.status_code != 200:
             raise ValueError(f"APIアップロードエラー: {response.json()}")
 
-        # ファイルキーを取得してURLを構築
+        # fileKeyを返す
         file_key = response.json()["fileKey"]
-        file_url = (
-            f"https://{self.subdomain}.cybozu.com/k/v1/file.json?fileKey={file_key}"
-        )
-
-        return file_url
+        return file_key
