@@ -30,14 +30,11 @@ class KintoneClient:
         }
         """HTTPヘッダー"""
 
-    def post_defect_records(
-        self, defect_list: List[DefectInfo], image_url: str = ""
-    ) -> List[DefectInfo]:
+    def post_defect_records(self, defect_list: List[DefectInfo]) -> List[DefectInfo]:
         """
         不良レコードをKintoneに送信
         ### Args:
             defect_list (List[DefectInfo]): 不良情報リスト
-            image_url (str): 画像ファイルのURL
         ### Raises:
             ValueError: API送信エラー
         ### Returns:
@@ -74,8 +71,8 @@ class KintoneClient:
                     },  # 修正
                     "model_label": {"value": str(item.model_label or "")},
                     "board_label": {"value": str(item.board_label or "")},
-                    "board_number_label": {"value": board_number_label},
-                    "defect_image": {"value": image_url},
+                    "board_number_label": {"value": str(item.board_number_label or "")},
+                    "defect_image": {"value": str(item.image_url or "")},
                 },
             }
             defect_list_dicts.append(defect_dict)

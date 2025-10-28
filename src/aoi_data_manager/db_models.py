@@ -2,7 +2,7 @@ from uuid import uuid5, NAMESPACE_DNS
 from sqlmodel import SQLModel, Field
 from datetime import datetime
 from pydantic import model_validator
-from typing import Any
+from typing import Any, Optional
 
 
 class DefectInfoTable(SQLModel, table=True):
@@ -60,6 +60,10 @@ class DefectInfoTable(SQLModel, table=True):
     """モデルラベル"""
     board_label: str = Field(default="", description="基板ラベル")
     """基板ラベル"""
+    board_number_label: str = Field(default="", description="基板番号ラベル")
+    """基板番号ラベル"""
+    image_url: Optional[str] = Field(default=None, description="画像URL")
+    """画像URL"""
     kintone_record_id: str = Field(default="", description="kintoneレコードID")
     """kintoneレコードID"""
 
