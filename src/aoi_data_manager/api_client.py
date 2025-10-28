@@ -50,11 +50,6 @@ class KintoneClient:
         defect_list_dicts = []
         for item in defect_list:
             board_number_label = f"{item.lot_number}_{item.current_board_index}"
-            # 画像ファイルをアップロード
-            if image_path:
-                image_url = self.upload_image_file(image_path)
-            else:
-                image_url = ""
             # Noneや空の値をチェック
             defect_dict = {
                 "updateKey": {"field": "unique_id", "value": str(item.id or "")},
@@ -79,9 +74,14 @@ class KintoneClient:
                     "model_label": {"value": str(item.model_label or "")},
                     "board_label": {"value": str(item.board_label or "")},
                     "board_number_label": {"value": board_number_label},
-                    "defect_image": {"value": [{"fileKey": image_url}]},
                 },
             }
+            # 画像パスが指定されている場合、画像をアップロードしてfileKeyを設定
+            if image_path:
+                file_key = self.upload_image_file(image_path)
+                defect_dict["record"]["defect_image"] = {
+                    "value": [{"fileKey": file_key}]
+                }
             defect_list_dicts.append(defect_dict)
 
         # 一括登録リクエスト
