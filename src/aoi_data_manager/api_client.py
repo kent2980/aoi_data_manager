@@ -72,7 +72,7 @@ class KintoneClient:
                     "model_label": {"value": str(item.model_label or "")},
                     "board_label": {"value": str(item.board_label or "")},
                     "board_number_label": {"value": str(item.board_number_label or "")},
-                    "defect_image": {"value": str(item.image_url or "")},
+                    "defect_image": {"value": [{"fileKey": str(item.image_url or "")}]},
                 },
             }
             defect_list_dicts.append(defect_dict)
