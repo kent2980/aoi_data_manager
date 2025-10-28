@@ -51,7 +51,10 @@ class KintoneClient:
         for item in defect_list:
             board_number_label = f"{item.lot_number}_{item.current_board_index}"
             # 画像ファイルをアップロード
-            image_url = self.upload_image_file(image_path)
+            if image_path:
+                image_url = self.upload_image_file(image_path)
+            else:
+                image_url = ""
             # Noneや空の値をチェック
             defect_dict = {
                 "updateKey": {"field": "unique_id", "value": str(item.id or "")},
