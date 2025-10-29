@@ -339,23 +339,30 @@ class FileManager:
         image_format: str = "PNG",
         quality: int = 95,
         font_size: int = None,
-    ):
+        max_image_size: str = None,
+        text_area_width: int = 300,
+    ) -> str:
         """
-        Canvas内の画像に座標マーカーを描画した状態で画像を生成し、指定したディレクトリに保存する
+        画像に不良マーカーと情報を描画してエクスポートする
 
         Args:
-            output_dir (str): 出力先ディレクトリのパス
-            reference (str): リファレンス情報（画像下部に表示）。Noneの場合は表示しない
-            defect_name (str): 不良名（画像下部に表示）。Noneの場合は表示しない
-            filename (str): 出力ファイル名（拡張子なし）。Noneの場合は"元ファイル名_marked_タイムスタンプ"を使用
-            marker_size (int): マーカーのサイズ（直径、ピクセル単位）デフォルト10
-            marker_color (str): マーカーの色（PIL形式: "red", "#FF0000"など）デフォルト"red"
-            image_format (str): 画像フォーマット（"PNG", "JPEG", "BMP"など）デフォルト"PNG"
-            quality (int): 画像品質（1-100、JPEGの場合は品質、PNGの場合は圧縮レベル0-9に変換）デフォルト95
-            font_size (int): テキストのフォントサイズ（ピクセル単位）。Noneの場合は画像サイズから自動計算
+            defect (DefectInfo): 不良情報オブジェクト
+            image_path (str): 元画像のパス
+            output_dir (str): 画像を保存するディレクトリのパス
+            filename (str): 保存する画像のファイル名（拡張子なし）。Noneの場合は自動生成
+            marker_size (int): マーカーのサイズ（ピクセル単位）
+            marker_color (str): マーカーの色（PIL対応の色名またはRGBタプル）
+            image_format (str): 画像フォーマット（"PNG", "JPEG", "BMP"など）
+            quality (int): 画像保存の品質（1-100）。JPEG/PNGに適用
+            font_size (int): 描画するテキストのフォントサイズ。Noneの場合は自動調整
+            max_image_size (str): 画像の最大サイズ（例: "800x600"）。画像がこのサイズより大きい場合、アスペクト比を維持して縮小
+            text_area_width (int): テキストエリアの幅（ピクセル）。画像の右側に追加される
+
+        Raises:
+            ValueError: 画像のエクスポートに失敗した場合
 
         Returns:
-            str: 保存した画像のパス（保存に失敗した場合はNone）
+            str: 保存した画像のパス
         """
 
         # 出力ディレクトリの作成
@@ -368,14 +375,69 @@ class FileManager:
                 raise ValueError(error_msg)
 
         try:
-            # 元の画像を開く
+            # 1. 元の画像を開く
             original_image = Image.open(image_path)
             original_width, original_height = original_image.size
 
-            # 描画オブジェクトを作成
-            draw = ImageDraw.Draw(original_image)
+            # 2. max_image_sizeより大きい場合、アスペクト比を維持して縮小
+            if max_image_size:
+                try:
+                    # "800x600" や "800*600" 形式をパース
+                    size_parts = re.split(r"[x*×]", max_image_size.strip())
+                    if len(size_parts) != 2:
+                        raise ValueError(
+                            f"画像サイズの形式が不正です: {max_image_size}"
+                        )
 
-            # 各不良のマーカーを描画
+                    max_width = int(size_parts[0])
+                    max_height = int(size_parts[1])
+
+                    if max_width <= 0 or max_height <= 0:
+                        raise ValueError(
+                            f"画像サイズは正の値である必要があります: {max_image_size}"
+                        )
+
+                    # 画像が最大サイズより大きい場合のみ縮小
+                    if original_width > max_width or original_height > max_height:
+                        # アスペクト比を維持して縮小
+                        aspect_ratio = original_width / original_height
+
+                        # 幅と高さのどちらが制約になるかを判定
+                        if original_width / max_width > original_height / max_height:
+                            # 幅が制約
+                            new_width = max_width
+                            new_height = int(max_width / aspect_ratio)
+                        else:
+                            # 高さが制約
+                            new_height = max_height
+                            new_width = int(max_height * aspect_ratio)
+
+                        # リサイズ（高品質なLANCZOS補間）
+                        original_image = original_image.resize(
+                            (new_width, new_height), Image.Resampling.LANCZOS
+                        )
+                        original_width, original_height = original_image.size
+
+                except ValueError as e:
+                    raise ValueError(f"画像サイズのパースに失敗しました: {e}")
+
+            # 3. テキストエリアを右側に追加した新しい画像を作成
+            # 新しい画像のサイズ = 元の画像幅 + テキストエリア幅
+            new_image_width = original_width + text_area_width
+            new_image_height = original_height
+
+            # 新しい画像を作成（白背景）
+            new_image = Image.new(
+                "RGB", (new_image_width, new_image_height), color="white"
+            )
+
+            # 元の画像を左側に貼り付け
+            new_image.paste(original_image, (0, 0))
+
+            # 描画オブジェクトを作成
+            draw = ImageDraw.Draw(new_image)
+
+            # 4. 不良マーカーを描画（元の画像領域内）
             marker_radius = marker_size // 2
             # 相対座標を実際のピクセル座標に変換
             pixel_x = defect.x * original_width
@@ -392,14 +454,14 @@ class FileManager:
                 [left, top, right, bottom], outline=marker_color, width=2, fill=None
             )
 
-            # referenceとdefect_nameの描画（指定されている場合）
+            # 5. テキストエリアに情報を描画
             reference = defect.reference
             defect_name = defect.defect_name
             if reference or defect_name:
                 # フォントサイズの決定（引数が指定されていれば使用、なければ自動計算）
                 if font_size is None:
-                    # 画像サイズに応じて自動調整（最小30、最大80）
-                    calculated_font_size = max(30, min(80, original_height // 20))
+                    # 画像サイズに応じて自動調整（最小20、最大40）
+                    calculated_font_size = max(20, min(40, original_height // 25))
                 else:
                     # 引数で指定されたフォントサイズを使用（範囲制限: 10-200）
                     calculated_font_size = max(10, min(200, font_size))
@@ -455,25 +517,25 @@ class FileManager:
                 # テキストの構築
                 text_lines = []
                 if reference:
-                    text_lines.append(f"リファレンス: {reference}")
+                    text_lines.append(f"リファレンス:")
+                    text_lines.append(f"  {reference}")
                 if defect_name:
-                    text_lines.append(f"不良名: {defect_name}")
+                    text_lines.append(f"不良名:")
+                    text_lines.append(f"  {defect_name}")
+
+                # テキストエリアの開始位置（画像の右側）
+                text_area_x = original_width + 10  # 10ピクセルのマージン
+                text_area_y = 10  # 上から10ピクセルのマージン
 
                 # 各行の描画位置を計算
-                line_height = font_size + 10
-                total_text_height = len(text_lines) * line_height + 2  # 上下マージン
-
-                # テキスト背景の矩形を描画（半透明の黒背景）
-                text_bg_top = original_height - total_text_height
-                draw.rectangle(
-                    [0, text_bg_top, original_width, original_height],
-                    fill=(0, 0, 0, 20),
-                )
+                line_height = calculated_font_size + 5
+                y_position = text_area_y
 
                 # テキストを描画
-                y_position = text_bg_top + 10
                 for text_line in text_lines:
-                    draw.text((10, y_position), text_line, fill="white", font=font)
+                    draw.text(
+                        (text_area_x, y_position), text_line, fill="black", font=font
+                    )
                     y_position += line_height
 
             # 出力ファイル名を生成
@@ -498,23 +560,7 @@ class FileManager:
                 # JPEG: 品質を1-100で指定
                 save_kwargs["quality"] = max(1, min(100, quality))
                 save_kwargs["optimize"] = True
-                # JPEGはRGBモードが必要
-                if original_image.mode in ("RGBA", "LA", "P"):
-                    # 透明度がある場合は白背景に合成
-                    background = Image.new("RGB", original_image.size, (255, 255, 255))
-                    if original_image.mode == "P":
-                        original_image = original_image.convert("RGBA")
-                    background.paste(
-                        original_image,
-                        mask=(
-                            original_image.split()[-1]
-                            if original_image.mode in ("RGBA", "LA")
-                            else None
-                        ),
-                    )
-                    original_image = background
-                elif original_image.mode != "RGB":
-                    original_image = original_image.convert("RGB")
+                # JPEGはRGBモードが必要（既にRGBで作成済み）
             elif image_format.upper() == "PNG":
                 # PNG: 圧縮レベルを0-9で指定（qualityを100段階から9段階に変換）
                 compress_level = max(0, min(9, int((100 - quality) / 11)))
@@ -529,9 +575,7 @@ class FileManager:
                     save_kwargs["compression"] = "tiff_lzw"
 
             # 画像を保存
-            original_image.save(
-                output_filepath, format=image_format.upper(), **save_kwargs
-            )
+            new_image.save(output_filepath, format=image_format.upper(), **save_kwargs)
 
             return str(output_filepath)
 
@@ -539,6 +583,7 @@ class FileManager:
             error_msg = f"画像のエクスポートに失敗しました: {e}"
             raise ValueError(error_msg)
 
+    @staticmethod
     @staticmethod
     def delete_exported_image(
         output_dir: str, filename: str, image_format: str = "PNG"
