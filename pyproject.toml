@@ -32,6 +32,7 @@ dependencies = [
     # pandasの32bit対応版
     "numpy==1.24.3",
     "pandas==2.0.3",
+    "pillow>=10.4.0",
     "requests>=2.28.0",
     # SQLAlchemyの安定版
     "sqlalchemy>=1.4.0,<2.1.0",
