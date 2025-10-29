@@ -339,7 +339,7 @@ class FileManager:
         image_format: str = "PNG",
         quality: int = 95,
         font_size: int = None,
-        max_image_size: str = None,
+        max_image_size: Tuple[int, int] | str = None,
         text_area_width: int = 300,
     ) -> str:
         """
@@ -355,7 +355,7 @@ class FileManager:
             image_format (str): 画像フォーマット（"PNG", "JPEG", "BMP"など）
             quality (int): 画像保存の品質（1-100）。JPEG/PNGに適用
             font_size (int): 描画するテキストのフォントサイズ。Noneの場合は自動調整
-            max_image_size (str): 画像の最大サイズ（例: "800x600"）。画像がこのサイズより大きい場合、アスペクト比を維持して縮小
+            max_image_size (Tuple[int, int] | str): 画像の最大サイズ。タプル(width, height)または文字列"800x600"形式で指定。画像がこのサイズより大きい場合、アスペクト比を維持して縮小
             text_area_width (int): テキストエリアの幅（ピクセル）。画像の右側に追加される
 
         Raises:
@@ -382,15 +382,23 @@ class FileManager:
             # 2. max_image_sizeより大きい場合、アスペクト比を維持して縮小
             if max_image_size:
                 try:
-                    # "800x600" や "800*600" 形式をパース
-                    size_parts = re.split(r"[x*×]", max_image_size.strip())
-                    if len(size_parts) != 2:
-                        raise ValueError(
-                            f"画像サイズの形式が不正です: {max_image_size}"
-                        )
-
-                    max_width = int(size_parts[0])
-                    max_height = int(size_parts[1])
+                    # タプルまたは文字列形式に対応
+                    if isinstance(max_image_size, tuple):
+                        # タプル形式: (width, height)
+                        if len(max_image_size) != 2:
+                            raise ValueError(
+                                f"画像サイズのタプルは2つの要素が必要です: {max_image_size}"
+                            )
+                        max_width, max_height = max_image_size
+                    else:
+                        # 文字列形式: "800x600" や "800*600" をパース
+                        size_parts = re.split(r"[x*×]", str(max_image_size).strip())
+                        if len(size_parts) != 2:
+                            raise ValueError(
+                                f"画像サイズの形式が不正です: {max_image_size}"
+                            )
+                        max_width = int(size_parts[0])
+                        max_height = int(size_parts[1])
 
                     if max_width <= 0 or max_height <= 0:
                         raise ValueError(

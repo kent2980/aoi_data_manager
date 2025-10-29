@@ -1105,3 +1105,33 @@ class TestTextAreaWidth:
                     original_aspect_ratio = original_width / original_height
                     result_aspect_ratio = image_width / result_img.height
                     assert abs(result_aspect_ratio - original_aspect_ratio) < 0.01
+
+
+class TestMaxImageSizeTuple:
+    """Test max_image_size tuple format"""
+
+    def test_max_image_size_as_tuple(
+        self, all_test_images, clean_export_dir, sample_defect
+    ):
+        """Test with max_image_size as tuple"""
+        test_size = (800, 600)
+        output_subdir = Path(clean_export_dir) / "tuple_800x600"
+        output_subdir.mkdir(parents=True, exist_ok=True)
+
+        for image_path in all_test_images[:2]:
+            original_name = Path(image_path).stem
+
+            result_path = FileManager.export_canvas_image_with_markers(
+                defect=sample_defect,
+                image_path=image_path,
+                output_dir=str(output_subdir),
+                filename=f"{original_name}_tuple",
+                max_image_size=test_size,
+                text_area_width=300,
+            )
+
+            assert Path(result_path).exists()
+            result_img = Image.open(result_path)
+            image_width = result_img.width - 300
+            assert image_width <= 800
+            assert result_img.height <= 600
