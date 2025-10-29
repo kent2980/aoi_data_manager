@@ -463,88 +463,87 @@ class FileManager:
             )
 
             # 5. テキストエリアに情報を描画
-            reference = defect.reference
-            defect_name = defect.defect_name
-            if reference or defect_name:
-                # フォントサイズの決定（引数が指定されていれば使用、なければ自動計算）
-                if font_size is None:
-                    # 画像サイズに応じて自動調整（最小20、最大40）
-                    calculated_font_size = max(20, min(40, original_height // 25))
-                else:
-                    # 引数で指定されたフォントサイズを使用（範囲制限: 10-200）
-                    calculated_font_size = max(10, min(200, font_size))
+            # フォントサイズの決定（引数が指定されていれば使用、なければ自動計算）
+            if font_size is None:
+                # 画像サイズに応じて自動調整（最小20、最大40）
+                calculated_font_size = max(20, min(40, original_height // 25))
+            else:
+                # 引数で指定されたフォントサイズを使用（範囲制限: 10-200）
+                calculated_font_size = max(10, min(200, font_size))
 
-                try:
-                    # システムフォントを試行（日本語対応）
-                    font = None
-                    # Windows/macOS/Linuxの日本語フォント候補
-                    font_candidates = [
-                        # Windows日本語フォント
-                        "C:/Windows/Fonts/msgothic.ttc",  # MSゴシック
-                        "C:/Windows/Fonts/meiryo.ttc",  # メイリオ
-                        "C:/Windows/Fonts/YuGothM.ttc",  # 游ゴシック Medium
-                        "C:/Windows/Fonts/YuGothR.ttc",  # 游ゴシック Regular
-                        "C:/Windows/Fonts/msmincho.ttc",  # MS明朝
-                        # macOS日本語フォント
-                        "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc",
-                        "/System/Library/Fonts/Hiragino Sans GB.ttc",
-                        # Linux日本語フォント
-                        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-                        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-                    ]
-                    for font_path in font_candidates:
-                        if os.path.exists(font_path):
-                            try:
-                                font = ImageFont.truetype(
-                                    font_path, calculated_font_size
-                                )
-                                break
-                            except Exception as e:
-                                print(f"フォント読み込みエラー ({font_path}): {e}")
-                                continue
-
-                    # フォントが見つからない場合は警告
-                    if font is None:
-                        print(
-                            "警告: 日本語フォントが見つかりませんでした。デフォルトフォントを使用します。"
-                        )
-                        # Pillow 10.0.0以降ではload_default()にsizeパラメータが使用可能
+            try:
+                # システムフォントを試行（日本語対応）
+                font = None
+                # Windows/macOS/Linuxの日本語フォント候補
+                font_candidates = [
+                    # Windows日本語フォント
+                    "C:/Windows/Fonts/msgothic.ttc",  # MSゴシック
+                    "C:/Windows/Fonts/meiryo.ttc",  # メイリオ
+                    "C:/Windows/Fonts/YuGothM.ttc",  # 游ゴシック Medium
+                    "C:/Windows/Fonts/YuGothR.ttc",  # 游ゴシック Regular
+                    "C:/Windows/Fonts/msmincho.ttc",  # MS明朝
+                    # macOS日本語フォント
+                    "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc",
+                    "/System/Library/Fonts/Hiragino Sans GB.ttc",
+                    # Linux日本語フォント
+                    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+                ]
+                for font_path in font_candidates:
+                    if os.path.exists(font_path):
                         try:
-                            font = ImageFont.load_default(size=calculated_font_size)
-                        except TypeError:
-                            # 古いバージョンのPillowの場合
-                            font = ImageFont.load_default()
-                except Exception as e:
-                    # フォント読み込み失敗時はデフォルトフォント
-                    print(f"フォント初期化エラー: {e}")
+                            font = ImageFont.truetype(font_path, calculated_font_size)
+                            break
+                        except Exception as e:
+                            print(f"フォント読み込みエラー ({font_path}): {e}")
+                            continue
+
+                # フォントが見つからない場合は警告
+                if font is None:
+                    print(
+                        "警告: 日本語フォントが見つかりませんでした。デフォルトフォントを使用します。"
+                    )
+                    # Pillow 10.0.0以降ではload_default()にsizeパラメータが使用可能
                     try:
                         font = ImageFont.load_default(size=calculated_font_size)
                     except TypeError:
+                        # 古いバージョンのPillowの場合
                         font = ImageFont.load_default()
+            except Exception as e:
+                # フォント読み込み失敗時はデフォルトフォント
+                print(f"フォント初期化エラー: {e}")
+                try:
+                    font = ImageFont.load_default(size=calculated_font_size)
+                except TypeError:
+                    font = ImageFont.load_default()
 
-                # テキストの構築
-                text_lines = []
-                if reference:
-                    text_lines.append(f"リファレンス:")
-                    text_lines.append(f"  {reference}")
-                if defect_name:
-                    text_lines.append(f"不良名:")
-                    text_lines.append(f"  {defect_name}")
+            # テキストの構築
+            text_lines = []
+            if defect.lot_number:
+                text_lines.append(defect.lot_number)
+            if defect.current_board_index and defect.defect_number:
+                text_lines.append(
+                    f"{defect.current_board_index} 枚目 {defect.defect_number}"
+                )
+            if defect.reference:
+                text_lines.append(f"リファレンス:")
+                text_lines.append(f"  {defect.reference}")
+            if defect.defect_name:
+                text_lines.append(f"不良名:")
+                text_lines.append(f"  {defect.defect_name}")
 
-                # テキストエリアの開始位置（画像の右側）
-                text_area_x = original_width + 10  # 10ピクセルのマージン
-                text_area_y = 10  # 上から10ピクセルのマージン
+            # テキストエリアの開始位置（画像の右側）
+            text_area_x = original_width + 10  # 10ピクセルのマージン
+            text_area_y = 10  # 上から10ピクセルのマージン
 
-                # 各行の描画位置を計算
-                line_height = calculated_font_size + 5
-                y_position = text_area_y
+            # 各行の描画位置を計算
+            line_height = calculated_font_size + 5
+            y_position = text_area_y
 
-                # テキストを描画
-                for text_line in text_lines:
-                    draw.text(
-                        (text_area_x, y_position), text_line, fill="black", font=font
-                    )
-                    y_position += line_height
+            # テキストを描画
+            for text_line in text_lines:
+                draw.text((text_area_x, y_position), text_line, fill="black", font=font)
+                y_position += line_height
 
             # 出力ファイル名を生成
             file_extension = image_format.lower()
