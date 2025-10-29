@@ -541,7 +541,7 @@ class FileManager:
 
     @staticmethod
     def delete_exported_image(
-        self, output_dir: str, filename: str, image_format: str = "PNG"
+        output_dir: str, filename: str, image_format: str = "PNG"
     ):
         """
         export_canvas_image_with_markersで生成された画像ファイルを削除する
