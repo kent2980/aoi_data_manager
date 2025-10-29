@@ -523,7 +523,7 @@ class FileManager:
                 text_lines.append(defect.lot_number)
             if defect.current_board_index and defect.defect_number:
                 text_lines.append(
-                    f"{defect.current_board_index} 枚目 {defect.defect_number}"
+                    f"{defect.current_board_index}枚目 No.{str(defect.defect_number).zfill(2)}"
                 )
             if defect.reference:
                 text_lines.append(f"リファレンス:")
